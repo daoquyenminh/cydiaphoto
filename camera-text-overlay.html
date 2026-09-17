@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Chụp ảnh + Ghi chú</title>
+<style>
+  :root{
+    --bg:#0b0b0c;
+    --panel:#161618;
+    --panel2:#1f1f22;
+    --text:#eee;
+    --muted:#9a9a9f;
+    --accent:#ffd400;
+    --accent2:#ff3b30;
+    --border:#2c2c30;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{
+    margin:0;padding:0;height:100%;
+    background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    overflow:hidden;
+  }
+  #app{
+    display:flex;
+    flex-direction:column;
+    height:100dvh;
+    width:100vw;
+  }
+  #camWrap{
+    position:relative;
+    flex:0 0 80%;
+    height:80%;
+    background:#000;
+    overflow:hidden;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  #camWrap video{display:none;}
+  #stage{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+  #camStatus{
+    position:absolute;
+    top:50%;left:50%;
+    transform:translate(-50%,-50%);
+    color:var(--muted);
+    font-size:14px;
+    text-align:center;
+    padding:0 20px;
+  }
+  #switchBtn{
+    position:absolute;
+    top:12px;right:12px;
+    width:42px;height:42px;
+    border-radius:50%;
+    background:rgba(0,0,0,.45);
+    border:1px solid rgba(255,255,255,.2);
+    display:flex;align-items:center;justify-content:center;
+    font-size:19px;
+    color:#fff;
+    z-index:5;
+  }
+  #panel{
+    flex:0 0 20%;
+    height:20%;
+    min-height:150px;
+    background:var(--panel);
+    border-top:1px solid var(--border);
+    display:flex;
+    flex-direction:column;
+    padding:8px 10px;
+    gap:6px;
+  }
+  .row{
+    display:flex;
+    gap:8px;
+  }
+  .field{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+    min-width:0;
+  }
+  .field label{
+    font-size:10px;
+    color:var(--muted);
+    padding-left:2px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .dot{
+    display:inline-block;
+    width:8px;height:8px;
+    border-radius:50%;
+    margin-right:5px;
+    vertical-align:middle;
+  }
+  .field input{
+    background:var(--panel2);
+    border:1px solid var(--border);
+    border-radius:9px;
+    color:var(--text);
+    font-size:14px;
+    padding:9px 10px;
+    outline:none;
+    width:100%;
+    min-width:0;
+  }
+  .field input:focus{
+    border-color:#555;
+  }
+  #captureRow{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-top:2px;
+  }
+  #captureBtn{
+    width:60px;height:60px;
+    border-radius:50%;
+    background:#fff;
+    border:4px solid #555;
+    position:relative;
+  }
+  #captureBtn:active{
+    background:#ddd;
+  }
+  #toast{
+    position:fixed;
+    bottom:calc(20% + 14px);
+    left:50%;
+    transform:translateX(-50%);
+    background:rgba(20,20,20,.92);
+    color:#fff;
+    padding:10px 18px;
+    border-radius:20px;
+    font-size:13px;
+    z-index:50;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .25s ease;
+    white-space:nowrap;
+  }
+  #toast.show{opacity:1;}
+  #flash{
+    position:fixed;
+    inset:0;
+    background:#fff;
+    opacity:0;
+    pointer-events:none;
+    z-index:40;
+  }
+  #flash.on{
+    opacity:.85;
+    transition:opacity .35s ease;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="camWrap">
+    <video id="video" playsinline autoplay muted></video>
+    <canvas id="stage"></canvas>
+    <div id="camStatus">Đang bật camera…</div>
+    <button id="switchBtn" title="Đổi camera">⟲</button>
+  </div>
+
+  <div id="panel">
+    <div class="row">
+      <div class="field">
+        <label><span class="dot" style="background:var(--accent)"></span>Dòng 1 (vàng)</label>
+        <input id="line1" type="text" placeholder="Frf-30" maxlength="30" autocomplete="off">
+      </div>
+      <div class="field">
+        <label><span class="dot" style="background:var(--accent2)"></span>Dòng 2 (đỏ)</label>
+        <input id="line2" type="text" placeholder="Lắp ráp : 50%" maxlength="30" autocomplete="off">
+      </div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label><span class="dot" style="background:var(--accent)"></span>Góc phải (vàng)</label>
+        <input id="line3" type="text" placeholder="SEV656,657" maxlength="30" autocomplete="off">
+      </div>
+    </div>
+    <div id="captureRow">
+      <button id="captureBtn" title="Chụp"></button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="flash"></div>
+
+<script>
+(function(){
+  const video = document.getElementById('video');
+  const stage = document.getElementById('stage');
+  const ctx = stage.getContext('2d');
+  const camStatus = document.getElementById('camStatus');
+  const switchBtn = document.getElementById('switchBtn');
+  const captureBtn = document.getElementById('captureBtn');
+  const toastEl = document.getElementById('toast');
+  const flashEl = document.getElementById('flash');
+  const line1 = document.getElementById('line1');
+  const line2 = document.getElementById('line2');
+  const line3 = document.getElementById('line3');
+
+  let stream = null;
+  let facingMode = 'environment';
+  let rafId = null;
+  let vw = 0, vh = 0;
+
+  function showToast(msg, ms){
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(()=> toastEl.classList.remove('show'), ms || 1800);
+  }
+
+  async function startCamera(){
+    if(stream){
+      stream.getTracks().forEach(t=>t.stop());
+      stream = null;
+    }
+    camStatus.style.display = 'block';
+    camStatus.textContent = 'Đang bật camera…';
+    try{
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: facingMode }, width:{ideal:1920}, height:{ideal:1080} },
+        audio: false
+      });
+      video.srcObject = stream;
+      await video.play();
+      camStatus.style.display = 'none';
+      vw = video.videoWidth || 1280;
+      vh = video.videoHeight || 720;
+      resizeCanvas();
+      if(!rafId) loop();
+    }catch(err){
+      camStatus.textContent = 'Không truy cập được camera. Vui lòng cho phép quyền camera trong trình duyệt.';
+      console.error(err);
+    }
+  }
+
+  function resizeCanvas(){
+    const wrap = document.getElementById('camWrap');
+    const rect = wrap.getBoundingClientRect();
+    stage.style.width = rect.width + 'px';
+    stage.style.height = rect.height + 'px';
+    stage.width = vw || rect.width;
+    stage.height = vh || rect.height;
+  }
+  window.addEventListener('resize', resizeCanvas);
+
+  function drawOverlayText(context, w, h){
+    const t1 = line1.value.trim();
+    const t2 = line2.value.trim();
+    const t3 = line3.value.trim();
+
+    const baseSize = Math.round(w * 0.045);
+    context.textBaseline = 'alphabetic';
+    context.lineJoin = 'round';
+
+    function drawLine(text, x, y, size, color, align){
+      if(!text) return;
+      context.font = `900 ${size}px Arial, sans-serif`;
+      context.textAlign = align;
+      context.lineWidth = Math.max(2, size * 0.11);
+      context.strokeStyle = '#000000';
+      context.fillStyle = color;
+      context.strokeText(text, x, y);
+      context.fillText(text, x, y);
+    }
+
+    // Dòng 1 & 2: góc dưới trái
+    const leftX = w * 0.035;
+    const line2Y = h * 0.955;
+    const line1Y = line2Y - baseSize * 1.35;
+    drawLine(t1, leftX, line1Y, baseSize, '#ffd400', 'left');
+    drawLine(t2, leftX, line2Y, baseSize, '#ff2d1f', 'left');
+
+    // Dòng 3: góc dưới phải
+    const rightX = w * 0.965;
+    const line3Y = h * 0.955;
+    drawLine(t3, rightX, line3Y, baseSize, '#ffd400', 'right');
+  }
+
+  function loop(){
+    if(video.readyState >= 2 && vw && vh){
+      ctx.drawImage(video, 0, 0, vw, vh);
+      drawOverlayText(ctx, vw, vh);
+    }
+    rafId = requestAnimationFrame(loop);
+  }
+
+  function triggerDownload(dataUrl){
+    const a = document.createElement('a');
+    const ts = new Date();
+    const pad = n => String(n).padStart(2,'0');
+    const name = `anh_${ts.getFullYear()}${pad(ts.getMonth()+1)}${pad(ts.getDate())}_${pad(ts.getHours())}${pad(ts.getMinutes())}${pad(ts.getSeconds())}.jpg`;
+    a.href = dataUrl;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  function capture(){
+    if(!vw || !vh){ showToast('Camera chưa sẵn sàng'); return; }
+    // flash effect
+    flashEl.classList.add('on');
+    setTimeout(()=> flashEl.classList.remove('on'), 180);
+
+    const out = document.createElement('canvas');
+    out.width = vw;
+    out.height = vh;
+    const octx = out.getContext('2d');
+    octx.drawImage(video, 0, 0, vw, vh);
+    drawOverlayText(octx, vw, vh);
+
+    const dataUrl = out.toDataURL('image/jpeg', 0.95);
+    triggerDownload(dataUrl);
+    showToast('Đã lưu ảnh về máy ✓');
+  }
+
+  captureBtn.addEventListener('click', capture);
+  switchBtn.addEventListener('click', ()=>{
+    facingMode = facingMode === 'environment' ? 'user' : 'environment';
+    startCamera();
+  });
+
+  // Prevent zoom on double tap for inputs area buttons
+  document.addEventListener('touchend', function(){}, {passive:true});
+
+  startCamera();
+})();
+</script>
+</body>
+</html>
