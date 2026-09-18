@@ -949,14 +949,25 @@
     const wrap = document.getElementById('camWrap');
     const rect = wrap.getBoundingClientRect();
     if(rect.width < 2 || rect.height < 2) return;
-    const targetW = Math.max(1, Math.round(rect.width * dpr));
-    const targetH = Math.max(1, Math.round(rect.height * dpr));
-    if(stage.width === targetW && stage.height === targetH) return;
+
+    // QUAN TRỌNG: luôn đồng bộ kích thước HIỂN THỊ (CSS) theo khung camWrap mới nhất,
+    // dù độ phân giải canvas có cần đổi hay không. Trước đây 2 dòng này nằm SAU điều
+    // kiện return bên dưới, nên khi xoay máy mà targetW/targetH (đã làm tròn theo dpr)
+    // trùng số với lần trước, hàm return sớm và style.width/height không được cập nhật
+    // -> canvas giữ nguyên kích thước CSS của hướng cũ, lộ nền đen của #camWrap ra
+    // thành viền đen bên phải/dưới. Set ở đây để không bao giờ bị lệch.
     stage.style.width = rect.width + 'px';
     stage.style.height = rect.height + 'px';
+
+    const targetW = Math.max(1, Math.round(rect.width * dpr));
+    const targetH = Math.max(1, Math.round(rect.height * dpr));
+    // Chỉ bỏ qua việc set thuộc tính width/height (vì set 2 thuộc tính này sẽ xoá
+    // sạch nội dung canvas, khá tốn kém) khi độ phân giải thực sự không đổi.
+    if(stage.width === targetW && stage.height === targetH) return;
     stage.width = targetW;
     stage.height = targetH;
     invalidateOverlayCache(); // đổi kích thước -> chữ/logo phải vẽ lại theo tỉ lệ mới
+    renderFrame(); // vẽ ngay 1 khung hình sau khi resize để không bị chớp đen chờ frame kế tiếp
   }
   window.addEventListener('resize', resizeCanvas);
   window.addEventListener('orientationchange', ()=>{
