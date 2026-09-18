@@ -625,6 +625,8 @@
   const video = document.getElementById('video');
   const stage = document.getElementById('stage');
   const ctx = stage.getContext('2d');
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
   const camStatus = document.getElementById('camStatus');
   const switchBtn = document.getElementById('switchBtn');
   const captureBtn = document.getElementById('captureBtn');
@@ -880,6 +882,20 @@
     vh = video.videoHeight || 720;
 
     const track = stream.getVideoTracks()[0];
+
+    // Cố nâng lên độ phân giải cao nhất mà camera thật sự hỗ trợ (không chỉ dừng ở mức "ideal" ban đầu)
+    try{
+      const caps = track.getCapabilities ? track.getCapabilities() : null;
+      if(caps && caps.width && caps.height && caps.width.max && caps.height.max){
+        await track.applyConstraints({
+          width: { ideal: caps.width.max },
+          height: { ideal: caps.height.max }
+        });
+        vw = video.videoWidth || vw;
+        vh = video.videoHeight || vh;
+      }
+    }catch(e){ /* một số trình duyệt/thiết bị không hỗ trợ applyConstraints nâng cấp, bỏ qua và dùng độ phân giải hiện có */ }
+
     const settings = track.getSettings ? track.getSettings() : {};
     if(settings.deviceId){
       const idx = videoDevices.findIndex(d => d.deviceId === settings.deviceId);
@@ -892,7 +908,7 @@
     camStatus.style.display = 'block';
     camStatus.textContent = t('camLoading');
     try{
-      const idealVideo = { width:{ideal:1920}, height:{ideal:1080} };
+      const idealVideo = { width:{ideal:4096}, height:{ideal:2160} };
 
       if(deviceId){
         await openStream({ deviceId: { exact: deviceId }, ...idealVideo });
@@ -1197,11 +1213,13 @@
     out.width = Math.round(crop.sw);
     out.height = Math.round(crop.sh);
     const octx = out.getContext('2d');
+    octx.imageSmoothingEnabled = true;
+    octx.imageSmoothingQuality = 'high';
     octx.drawImage(video, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, out.width, out.height);
     drawOverlayText(octx, out.width, out.height);
     drawLogo(octx, out.width, out.height);
 
-    const dataUrl = out.toDataURL('image/jpeg', 0.95);
+    const dataUrl = out.toDataURL('image/jpeg', 0.98);
     openPreview(dataUrl);
   }
 
