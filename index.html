@@ -870,6 +870,28 @@
     return null;
   }
 
+  // Luôn đồng bộ vw/vh với kích thước thật của video bất cứ khi nào camera đổi độ phân giải
+  // (đổi camera, applyConstraints, xoay máy...). Đây là nguyên nhân gây lỗi crop/lệch khung ở chế độ dọc:
+  // trước đây vw/vh có thể bị "cũ" (đọc quá sớm) trong khi khung hình thật đã đổi kích thước.
+  video.addEventListener('resize', () => {
+    vw = video.videoWidth || vw;
+    vh = video.videoHeight || vh;
+  });
+
+  function waitForVideoResize(timeoutMs){
+    return new Promise(resolve => {
+      let done = false;
+      function onResize(){
+        if(done) return;
+        done = true;
+        video.removeEventListener('resize', onResize);
+        resolve();
+      }
+      video.addEventListener('resize', onResize);
+      setTimeout(()=>{ if(!done){ done = true; video.removeEventListener('resize', onResize); resolve(); } }, timeoutMs);
+    });
+  }
+
   async function openStream(constraintsVideo){
     if(stream){
       stream.getTracks().forEach(t => t.stop());
@@ -878,6 +900,7 @@
     stream = await navigator.mediaDevices.getUserMedia({ video: constraintsVideo, audio: false });
     video.srcObject = stream;
     await video.play();
+    await waitForVideoResize(300);
     vw = video.videoWidth || 1280;
     vh = video.videoHeight || 720;
 
@@ -891,6 +914,7 @@
           width: { ideal: caps.width.max },
           height: { ideal: caps.height.max }
         });
+        await waitForVideoResize(400);
         vw = video.videoWidth || vw;
         vh = video.videoHeight || vh;
       }
@@ -1115,8 +1139,10 @@
   }
 
   function loop(){
-    if(video.readyState >= 2 && vw && vh && stage.width && stage.height){
-      const crop = computeCoverCrop(vw, vh, stage.width, stage.height);
+    const curW = video.videoWidth, curH = video.videoHeight;
+    if(video.readyState >= 2 && curW && curH && stage.width && stage.height){
+      vw = curW; vh = curH; // giữ đồng bộ để capture() dùng lại nếu cần
+      const crop = computeCoverCrop(curW, curH, stage.width, stage.height);
       ctx.drawImage(video, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, stage.width, stage.height);
       drawOverlayText(ctx, stage.width, stage.height);
       drawLogo(ctx, stage.width, stage.height);
@@ -1204,11 +1230,12 @@
   });
 
   function capture(){
-    if(!vw || !vh || !stage.width || !stage.height){ showToast(t('toastCamNotReady')); return; }
+    const curW = video.videoWidth, curH = video.videoHeight;
+    if(!curW || !curH || !stage.width || !stage.height){ showToast(t('toastCamNotReady')); return; }
     flashEl.classList.add('on');
     setTimeout(()=> flashEl.classList.remove('on'), 180);
 
-    const crop = computeCoverCrop(vw, vh, stage.width, stage.height);
+    const crop = computeCoverCrop(curW, curH, stage.width, stage.height);
     const out = document.createElement('canvas');
     out.width = Math.round(crop.sw);
     out.height = Math.round(crop.sh);
