@@ -13,15 +13,15 @@
     --text:#f2f2f4;
     --muted:#9a9aa2;
 
-    --glass-bg: rgba(30, 30, 34, .55);
+    --glass-bg: rgba(30, 30, 34, .26);
     --glass-border: rgba(255, 255, 255, .16);
     --glass-hi: rgba(255, 255, 255, .22);
 
-    --btn-bg: rgba(28,28,30,.45);
+    --btn-bg: rgba(28,28,30,.22);
     --btn-border: rgba(255,255,255,.18);
     --btn-icon:#ffffff;
 
-    --toast-bg: rgba(24,24,27,.7);
+    --toast-bg: rgba(24,24,27,.45);
     --toast-border: rgba(255,255,255,.16);
     --toast-text:#ffffff;
 
@@ -30,14 +30,14 @@
     --shadow-frame: 0 18px 50px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.08);
 
     /* Bảng màu 4 ô nhập, đồng bộ với màu chữ in trên ảnh */
-    --c-item-a: rgba(239, 68, 68, .55);
-    --c-item-b: rgba(180, 40, 45, .45);
-    --c-project-a: rgba(255, 157, 60, .55);
-    --c-project-b: rgba(210, 110, 25, .45);
-    --c-progress-a: rgba(33, 194, 200, .55);
-    --c-progress-b: rgba(15, 140, 150, .45);
-    --c-time-a: rgba(59, 142, 240, .55);
-    --c-time-b: rgba(30, 95, 190, .45);
+    --c-item-a: rgba(239, 68, 68, .32);
+    --c-item-b: rgba(180, 40, 45, .24);
+    --c-project-a: rgba(255, 157, 60, .32);
+    --c-project-b: rgba(210, 110, 25, .24);
+    --c-progress-a: rgba(33, 194, 200, .32);
+    --c-progress-b: rgba(15, 140, 150, .24);
+    --c-time-a: rgba(59, 142, 240, .32);
+    --c-time-b: rgba(30, 95, 190, .24);
 
     --field-text:#ffffff;
     --field-placeholder: rgba(255,255,255,.85);
@@ -63,15 +63,15 @@
     --text:#15201a;
     --muted:#5d6b62;
 
-    --glass-bg: rgba(255, 255, 255, .55);
+    --glass-bg: rgba(255, 255, 255, .28);
     --glass-border: rgba(20, 40, 25, .10);
     --glass-hi: rgba(255, 255, 255, .75);
 
-    --btn-bg: rgba(255,255,255,.55);
+    --btn-bg: rgba(255,255,255,.28);
     --btn-border: rgba(20,40,25,.12);
     --btn-icon:#15201a;
 
-    --toast-bg: rgba(255,255,255,.85);
+    --toast-bg: rgba(255,255,255,.5);
     --toast-border: rgba(20,40,25,.10);
     --toast-text:#15201a;
 
@@ -79,14 +79,14 @@
     --shadow-panel-land: -10px 0 26px rgba(30,60,40,.14);
     --shadow-frame: 0 16px 40px rgba(30,60,40,.18), 0 0 0 1px rgba(20,40,25,.08);
 
-    --c-item-a: rgba(239, 68, 68, .55);
-    --c-item-b: rgba(180, 40, 45, .45);
-    --c-project-a: rgba(255, 157, 60, .55);
-    --c-project-b: rgba(210, 110, 25, .45);
-    --c-progress-a: rgba(33, 194, 200, .55);
-    --c-progress-b: rgba(15, 140, 150, .45);
-    --c-time-a: rgba(59, 142, 240, .55);
-    --c-time-b: rgba(30, 95, 190, .45);
+    --c-item-a: rgba(239, 68, 68, .32);
+    --c-item-b: rgba(180, 40, 45, .24);
+    --c-project-a: rgba(255, 157, 60, .32);
+    --c-project-b: rgba(210, 110, 25, .24);
+    --c-progress-a: rgba(33, 194, 200, .32);
+    --c-progress-b: rgba(15, 140, 150, .24);
+    --c-time-a: rgba(59, 142, 240, .32);
+    --c-time-b: rgba(30, 95, 190, .24);
 
     --field-text:#000000;
     --field-placeholder: rgba(0,0,0,.75);
@@ -203,8 +203,8 @@
     width:44px;height:44px;
     border-radius:50%;
     background:var(--btn-bg);
-    backdrop-filter:blur(16px) saturate(180%);
-    -webkit-backdrop-filter:blur(16px) saturate(180%);
+    backdrop-filter:blur(22px) saturate(200%);
+    -webkit-backdrop-filter:blur(22px) saturate(200%);
     border:1px solid var(--btn-border);
     display:flex;align-items:center;justify-content:center;
     font-size:19px;
@@ -220,8 +220,8 @@
     max-height:48dvh;
     overflow-y:auto;
     background:var(--glass-bg);
-    backdrop-filter:blur(28px) saturate(180%);
-    -webkit-backdrop-filter:blur(28px) saturate(180%);
+    backdrop-filter:blur(36px) saturate(200%);
+    -webkit-backdrop-filter:blur(36px) saturate(200%);
     border-top:1px solid var(--glass-border);
     border-radius:26px 26px 0 0;
     box-shadow:var(--shadow-panel), inset 0 1px 0 rgba(255,255,255,.08);
@@ -246,8 +246,8 @@
     width:100%;
     letter-spacing:.1px;
     box-shadow:inset 0 1px 0 var(--glass-hi), 0 4px 12px rgba(0,0,0,.18);
-    backdrop-filter:blur(14px) saturate(160%);
-    -webkit-backdrop-filter:blur(14px) saturate(160%);
+    backdrop-filter:blur(18px) saturate(180%);
+    -webkit-backdrop-filter:blur(18px) saturate(180%);
     transition:transform .12s ease;
   }
   .field:focus{ transform:scale(1.01); border-color:rgba(255,255,255,.45); }
@@ -285,8 +285,8 @@
     width:62px;height:62px;
     border-radius:50%;
     background:var(--capture-track);
-    backdrop-filter:blur(10px) saturate(160%);
-    -webkit-backdrop-filter:blur(10px) saturate(160%);
+    backdrop-filter:blur(14px) saturate(180%);
+    -webkit-backdrop-filter:blur(14px) saturate(180%);
     border:3px solid var(--capture-ring);
     box-shadow:0 4px 16px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.2);
     flex:0 0 auto;
@@ -985,7 +985,6 @@
       const crop = computeCoverCrop(vw, vh, stage.width, stage.height);
       ctx.drawImage(video, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, stage.width, stage.height);
       drawOverlayText(ctx, stage.width, stage.height);
-      drawLogo(ctx, stage.width, stage.height);
     }
     rafId = requestAnimationFrame(loop);
   }
@@ -1081,10 +1080,8 @@
     const octx = out.getContext('2d');
     octx.drawImage(video, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, out.width, out.height);
     drawOverlayText(octx, out.width, out.height);
-    drawLogo(octx, out.width, out.height);
 
-    const framed = applyPolaroidFrame(out);
-    const dataUrl = framed.toDataURL('image/jpeg', 0.95);
+    const dataUrl = out.toDataURL('image/jpeg', 0.95);
     openPreview(dataUrl);
   }
 
