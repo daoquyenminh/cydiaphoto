@@ -169,13 +169,25 @@
   }
 
   /* ---------- Ô nhập phóng to đè lên camera khi đang gõ (bàn phím che phần dưới) ---------- */
-  #bigEdit{
+  #bigEditWrap{
     position:absolute;
     top:6%;
     left:50%;
     width:88%;
     max-width:88%;
     transform:translate(-50%,-8px) scale(.97);
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    gap:10px;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .18s ease, transform .18s ease;
+    z-index:6;
+  }
+  #bigEditWrap.show{ opacity:1; transform:translate(-50%,0) scale(1); pointer-events:auto; }
+  #bigEdit{
+    width:100%;
     padding:16px 24px;
     border:none;
     outline:none;
@@ -188,16 +200,42 @@
     caret-color:#fff;
     line-height:1.25;
     box-shadow:0 16px 38px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.2);
-    opacity:0;
-    pointer-events:none;
-    transition:opacity .18s ease, transform .18s ease;
-    z-index:6;
   }
-  #bigEdit.show{ opacity:1; transform:translate(-50%,0) scale(1); pointer-events:auto; }
   #bigEdit::placeholder{ color:rgba(255,255,255,.8); font-style:italic; font-weight:700; }
   #bigEdit.field-item{ background:linear-gradient(135deg, var(--c-item-a), var(--c-item-b)); }
   #bigEdit.field-project{ background:linear-gradient(135deg, var(--c-project-a), var(--c-project-b)); }
   #bigEdit.field-progress{ background:linear-gradient(135deg, var(--c-progress-a), var(--c-progress-b)); }
+
+  #bigEditActions{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+  }
+  .bigEditBtn{
+    flex:1;
+    max-width:160px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    padding:12px 14px;
+    border:1px solid rgba(255,255,255,.22);
+    border-radius:14px;
+    font-family:inherit;
+    font-size:14px;
+    font-weight:700;
+    letter-spacing:.2px;
+    color:#fff;
+    backdrop-filter:blur(18px) saturate(180%);
+    -webkit-backdrop-filter:blur(18px) saturate(180%);
+    box-shadow:0 8px 20px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.14);
+    cursor:pointer;
+    -webkit-appearance:none;
+    appearance:none;
+  }
+  .bigEditBtn:active{ transform:scale(.96); }
+  #bigEditCancel{ background:rgba(70,20,20,.55); }
+  #bigEditOk{ background:rgba(20,90,55,.6); }
 
   .glassBtn{
     width:44px;height:44px;
@@ -532,7 +570,13 @@
       <video id="video" playsinline autoplay muted></video>
       <canvas id="stage"></canvas>
       <div id="camStatus">Đang bật camera…</div>
-      <input id="bigEdit" type="text" autocomplete="off" maxlength="40">
+      <div id="bigEditWrap">
+        <input id="bigEdit" type="text" autocomplete="off" maxlength="40">
+        <div id="bigEditActions">
+          <button type="button" id="bigEditCancel" class="bigEditBtn">✕ <span id="bigEditCancelLabel">Huỷ</span></button>
+          <button type="button" id="bigEditOk" class="bigEditBtn">✓ <span id="bigEditOkLabel">Đồng ý</span></button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -616,7 +660,9 @@
       modalCancel:'Huỷ',
       modalOk:'Lưu ảnh',
       toastSaved:'Đã lưu ảnh về máy ✓',
-      altPhoto:'Ảnh vừa chụp'
+      altPhoto:'Ảnh vừa chụp',
+      confirmLabel:'Đồng ý',
+      cancelLabel:'Huỷ'
     },
     en:{
       camLoading:'Turning on camera…',
@@ -636,7 +682,9 @@
       modalCancel:'Cancel',
       modalOk:'Save photo',
       toastSaved:'Photo saved ✓',
-      altPhoto:'Captured photo'
+      altPhoto:'Captured photo',
+      confirmLabel:'OK',
+      cancelLabel:'Cancel'
     }
   };
   let currentLang = 'vi';
@@ -667,6 +715,8 @@
     previewCancel.textContent = t('modalCancel');
     previewOk.textContent = t('modalOk');
     previewImg.alt = t('altPhoto');
+    bigEditCancelLabel.textContent = t('cancelLabel');
+    bigEditOkLabel.textContent = t('confirmLabel');
 
     if(camStatus.style.display !== 'none'){
       camStatus.textContent = t(camStatusKey);
@@ -682,19 +732,27 @@
   const fieldProject = document.getElementById('fieldProject');
   const fieldProgress = document.getElementById('fieldProgress');
   const bigEdit = document.getElementById('bigEdit');
+  const bigEditWrap = document.getElementById('bigEditWrap');
+  const bigEditOk = document.getElementById('bigEditOk');
+  const bigEditCancel = document.getElementById('bigEditCancel');
+  const bigEditOkLabel = document.getElementById('bigEditOkLabel');
+  const bigEditCancelLabel = document.getElementById('bigEditCancelLabel');
 
   // ---------- Ô nhập phóng to đè lên camera, gõ trực tiếp vào đây ----------
   // Bàn phím trên điện thoại thường che mất panel nhập liệu phía dưới,
   // nên các ô nhỏ chỉ dùng để hiển thị + mở ô to; gõ chữ thật diễn ra trên #bigEdit.
   let activeField = null;
+  let bigEditOriginalValue = '';
 
   function bindBigEdit(field, colorClass, phKey){
     field.setAttribute('readonly', 'readonly'); // chặn bàn phím bật lên ở ô nhỏ
     field.addEventListener('click', ()=>{
       activeField = field;
-      bigEdit.className = 'show ' + colorClass; // gán màu khớp với ô đang chỉnh
+      bigEditOriginalValue = field.value;
+      bigEdit.className = colorClass; // gán màu khớp với ô đang chỉnh
       bigEdit.placeholder = t(phKey);
       bigEdit.value = field.value;
+      bigEditWrap.classList.add('show');
       bigEdit.focus();
     });
   }
@@ -705,12 +763,33 @@
   bigEdit.addEventListener('input', ()=>{
     if(activeField) activeField.value = bigEdit.value;
   });
-  bigEdit.addEventListener('keydown', (e)=>{
-    if(e.key === 'Enter'){ e.preventDefault(); bigEdit.blur(); }
-  });
-  bigEdit.addEventListener('blur', ()=>{
-    bigEdit.classList.remove('show');
+
+  function closeBigEdit(){
+    bigEditWrap.classList.remove('show');
+    bigEdit.blur();
     activeField = null;
+  }
+
+  bigEdit.addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter'){ e.preventDefault(); closeBigEdit(); }
+  });
+  // Nếu người dùng chạm ra ngoài (không qua 2 nút) thì tự đóng, vẫn giữ nội dung đã gõ
+  bigEdit.addEventListener('blur', ()=>{
+    bigEditWrap.classList.remove('show');
+  });
+
+  // Giữ focus cho ô nhập khi chạm vào 2 nút, để xử lý xong rồi mới tắt bàn phím
+  bigEditOk.addEventListener('pointerdown', (e)=> e.preventDefault());
+  bigEditCancel.addEventListener('pointerdown', (e)=> e.preventDefault());
+
+  bigEditOk.addEventListener('click', ()=>{
+    if(activeField) activeField.value = bigEdit.value; // đồng ý: lưu nội dung vừa gõ
+    closeBigEdit();
+  });
+  bigEditCancel.addEventListener('click', ()=>{
+    if(activeField) activeField.value = bigEditOriginalValue; // huỷ: khôi phục giá trị cũ
+    bigEdit.value = bigEditOriginalValue;
+    closeBigEdit();
   });
 
 
@@ -902,8 +981,19 @@
       if(!value) return;
       const text = `${label} : ${value}`;
       context.textAlign = align;
-      context.shadowColor = 'rgba(0,0,0,.55)';
-      context.shadowBlur = fontSize * 0.22;
+      context.lineJoin = 'round';
+      context.miterLimit = 2;
+
+      // viền đen mỏng làm nổi bật chữ
+      context.shadowColor = 'transparent';
+      context.shadowBlur = 0;
+      context.lineWidth = Math.max(1.5, fontSize * 0.16);
+      context.strokeStyle = 'rgba(0,0,0,.92)';
+      context.strokeText(text, x, y);
+
+      // đổ bóng nhẹ + tô màu chữ
+      context.shadowColor = 'rgba(0,0,0,.5)';
+      context.shadowBlur = fontSize * 0.18;
       context.shadowOffsetX = 0;
       context.shadowOffsetY = fontSize * 0.05;
       context.fillStyle = color;
