@@ -966,7 +966,7 @@
   document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) resizeCanvas(); });
   window.addEventListener('pageshow', resizeCanvas);
 
-  // ---------- Vẽ 4 dòng ghi chú "Nhãn : giá trị" ở góc dưới ảnh ----------
+  // ---------- Vẽ 4 dòng ghi chú "Nhãn : giá trị" ở góc dưới ảnh, tự xuống dòng khi dài ----------
   function drawOverlayText(context, w, h){
     const item = fieldItem.value.trim();
     const project = fieldProject.value.trim();
@@ -974,13 +974,59 @@
     const time = getCurrentTimeString();
 
     const fontSize = Math.max(10, Math.round(w * 0.032));
+    const lineHeight = fontSize * 1.3;
     context.textBaseline = 'alphabetic';
     context.font = `800 ${fontSize}px Arial, sans-serif`;
 
-    function drawLabel(label, value, x, y, color, align){
-      if(!value) return;
-      const text = `${label} : ${value}`;
-      context.textAlign = align;
+    const leftX = w * 0.035;
+    const rightX = w * 0.44;
+    const colGap = w * 0.02;
+    const maxWidthLeft = Math.max(fontSize * 3, rightX - leftX - colGap);
+    const maxWidthRight = Math.max(fontSize * 3, w * 0.965 - rightX);
+
+    // Bẻ 1 chuỗi thành nhiều dòng vừa với maxWidth; chuỗi/từ quá dài sẽ bẻ theo ký tự
+    function wrapText(text, maxWidth){
+      const lines = [];
+      function hardBreak(str){
+        let chunk = '';
+        for(const ch of str){
+          const test = chunk + ch;
+          if(chunk && context.measureText(test).width > maxWidth){
+            lines.push(chunk);
+            chunk = ch;
+          } else {
+            chunk = test;
+          }
+        }
+        return chunk;
+      }
+      const words = text.split(' ');
+      let line = '';
+      for(const word of words){
+        if(context.measureText(word).width > maxWidth){
+          if(line){ lines.push(line); line = ''; }
+          line = hardBreak(word);
+          continue;
+        }
+        const test = line ? line + ' ' + word : word;
+        if(context.measureText(test).width > maxWidth){
+          lines.push(line);
+          line = word;
+        } else {
+          line = test;
+        }
+      }
+      if(line) lines.push(line);
+      return lines;
+    }
+
+    function buildLines(label, value, maxWidth){
+      if(!value) return [];
+      return wrapText(`${label} : ${value}`, maxWidth);
+    }
+
+    function drawLine(text, x, y, color){
+      context.textAlign = 'left';
       context.lineJoin = 'round';
       context.miterLimit = 2;
 
@@ -1002,15 +1048,36 @@
       context.shadowBlur = 0;
     }
 
-    const leftX = w * 0.035;
-    const rightX = w * 0.44;
-    const row2Y = h - fontSize * 0.9;
-    const row1Y = row2Y - fontSize * 1.3;
+    function drawColumn(x, groups){
+      let y = startY;
+      for(const group of groups){
+        for(const line of group.lines){
+          drawLine(line, x, y, group.color);
+          y += lineHeight;
+        }
+      }
+    }
 
-    drawLabel('Item', item, leftX, row1Y, '#f2534d', 'left');
-    drawLabel('Project', project, rightX, row1Y, '#ff9d3c', 'left');
-    drawLabel('Progress', progress, leftX, row2Y, '#21c2c8', 'left');
-    drawLabel('Time', time, rightX, row2Y, '#3b8ef0', 'left');
+    const itemLines = buildLines('Item', item, maxWidthLeft);
+    const progressLines = buildLines('Progress', progress, maxWidthLeft);
+    const projectLines = buildLines('Project', project, maxWidthRight);
+    const timeLines = buildLines('Time', time, maxWidthRight);
+
+    const leftLineCount = itemLines.length + progressLines.length;
+    const rightLineCount = projectLines.length + timeLines.length;
+    const maxLineCount = Math.max(leftLineCount, rightLineCount, 1);
+
+    const bottomPad = fontSize * 0.9;
+    const startY = h - bottomPad - (maxLineCount - 1) * lineHeight;
+
+    drawColumn(leftX, [
+      { lines:itemLines, color:'#f2534d' },
+      { lines:progressLines, color:'#21c2c8' }
+    ]);
+    drawColumn(rightX, [
+      { lines:projectLines, color:'#ff9d3c' },
+      { lines:timeLines, color:'#3b8ef0' }
+    ]);
   }
 
   // ---------- Logo công ty (tái tạo vector tạm thời, xem ghi chú trong hội thoại) ----------
