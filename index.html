@@ -1090,7 +1090,7 @@
     if(!logoLoaded || !logoImg.naturalWidth) return;
     const isLandscape = w > h;
     const basis = Math.min(w, h);              // dùng cạnh ngắn hơn làm chuẩn, để logo không bị to bất thường khi xoay ngang
-    const scale = isLandscape ? 0.15 : 0.22;    // chiều ngang dùng tỉ lệ nhỏ hơn
+    const scale = isLandscape ? 0.15 : 0.18;    // chiều ngang dùng tỉ lệ nhỏ hơn
     const logoW = basis * scale;
     const logoH = logoW * (logoImg.naturalHeight / logoImg.naturalWidth);
     const marginX = basis * 0.03;
