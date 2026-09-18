@@ -624,7 +624,7 @@
 (function(){
   const video = document.getElementById('video');
   const stage = document.getElementById('stage');
-  const ctx = stage.getContext('2d');
+  const ctx = stage.getContext('2d', { alpha: false }); // ảnh video luôn phủ kín khung -> tắt alpha cho nhẹ
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
   const camStatus = document.getElementById('camStatus');
@@ -808,7 +808,10 @@
       const saved = localStorage.getItem('cam_theme');
       if(saved === 'light' || saved === 'dark') return saved;
     }catch(e){}
-    return 'dark'; // luôn mặc định dark, không theo cài đặt hệ thống máy
+    try{
+      if(window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) return 'light';
+    }catch(e){}
+    return 'dark';
   }
   function applyTheme(theme){
     root.setAttribute('data-theme', theme);
@@ -826,7 +829,10 @@
   let vw = 0, vh = 0;
   let videoDevices = [];
   let currentDeviceIndex = -1;
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  // Overlay chữ giờ được vẽ 1 lần rồi cache (xem overlayCanvas bên dưới) nên không còn
+  // tốn phí mỗi khung hình -> có thể nâng trần dpr lên 3 để chữ/ảnh nét trên iPhone Pro (dpr=3)
+  // mà vẫn mượt, thay vì ép cứng dpr=2 khiến ảnh bị phóng to mờ trên các máy dpr cao.
+  const dpr = Math.min(window.devicePixelRatio || 1, 3);
 
   function showToast(msg, ms){
     toastEl.textContent = msg;
@@ -870,28 +876,6 @@
     return null;
   }
 
-  // Luôn đồng bộ vw/vh với kích thước thật của video bất cứ khi nào camera đổi độ phân giải
-  // (đổi camera, applyConstraints, xoay máy...). Đây là nguyên nhân gây lỗi crop/lệch khung ở chế độ dọc:
-  // trước đây vw/vh có thể bị "cũ" (đọc quá sớm) trong khi khung hình thật đã đổi kích thước.
-  video.addEventListener('resize', () => {
-    vw = video.videoWidth || vw;
-    vh = video.videoHeight || vh;
-  });
-
-  function waitForVideoResize(timeoutMs){
-    return new Promise(resolve => {
-      let done = false;
-      function onResize(){
-        if(done) return;
-        done = true;
-        video.removeEventListener('resize', onResize);
-        resolve();
-      }
-      video.addEventListener('resize', onResize);
-      setTimeout(()=>{ if(!done){ done = true; video.removeEventListener('resize', onResize); resolve(); } }, timeoutMs);
-    });
-  }
-
   async function openStream(constraintsVideo){
     if(stream){
       stream.getTracks().forEach(t => t.stop());
@@ -900,26 +884,10 @@
     stream = await navigator.mediaDevices.getUserMedia({ video: constraintsVideo, audio: false });
     video.srcObject = stream;
     await video.play();
-    await waitForVideoResize(300);
     vw = video.videoWidth || 1280;
     vh = video.videoHeight || 720;
 
     const track = stream.getVideoTracks()[0];
-
-    // Cố nâng lên độ phân giải cao nhất mà camera thật sự hỗ trợ (không chỉ dừng ở mức "ideal" ban đầu)
-    try{
-      const caps = track.getCapabilities ? track.getCapabilities() : null;
-      if(caps && caps.width && caps.height && caps.width.max && caps.height.max){
-        await track.applyConstraints({
-          width: { ideal: caps.width.max },
-          height: { ideal: caps.height.max }
-        });
-        await waitForVideoResize(400);
-        vw = video.videoWidth || vw;
-        vh = video.videoHeight || vh;
-      }
-    }catch(e){ /* một số trình duyệt/thiết bị không hỗ trợ applyConstraints nâng cấp, bỏ qua và dùng độ phân giải hiện có */ }
-
     const settings = track.getSettings ? track.getSettings() : {};
     if(settings.deviceId){
       const idx = videoDevices.findIndex(d => d.deviceId === settings.deviceId);
@@ -932,7 +900,7 @@
     camStatus.style.display = 'block';
     camStatus.textContent = t('camLoading');
     try{
-      const idealVideo = { width:{ideal:4096}, height:{ideal:2160} };
+      const idealVideo = { width:{ideal:1920}, height:{ideal:1080} };
 
       if(deviceId){
         await openStream({ deviceId: { exact: deviceId }, ...idealVideo });
@@ -988,6 +956,7 @@
     stage.style.height = rect.height + 'px';
     stage.width = targetW;
     stage.height = targetH;
+    invalidateOverlayCache(); // đổi kích thước -> chữ/logo phải vẽ lại theo tỉ lệ mới
   }
   window.addEventListener('resize', resizeCanvas);
   window.addEventListener('orientationchange', ()=>{
@@ -1002,6 +971,37 @@
   }
   document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) resizeCanvas(); });
   window.addEventListener('pageshow', resizeCanvas);
+
+  // ---------- Cache overlay (chữ + logo) ----------
+  // Vẽ chữ có viền + đổ bóng (shadowBlur) mỗi khung hình rất tốn, mà nội dung chữ chỉ đổi
+  // khi người dùng gõ hoặc mỗi khi đồng hồ nhảy giây -> vẽ 1 lần ra canvas riêng (trong suốt),
+  // rồi mỗi khung hình camera chỉ cần drawImage canvas này lên trên (rất rẻ, mượt hơn hẳn).
+  const overlayCanvas = document.createElement('canvas');
+  const overlayCtx = overlayCanvas.getContext('2d');
+  let overlayDirty = true;
+  let overlayLastKey = '';
+
+  function invalidateOverlayCache(){ overlayDirty = true; }
+
+  function rebuildOverlayCacheIfNeeded(w, h){
+    const key = `${w}x${h}|${fieldItem.value}|${fieldProject.value}|${fieldProgress.value}|${getCurrentTimeString()}|${logoLoaded}`;
+    if(!overlayDirty && key === overlayLastKey) return;
+    overlayDirty = false;
+    overlayLastKey = key;
+
+    if(overlayCanvas.width !== w) overlayCanvas.width = w;
+    if(overlayCanvas.height !== h) overlayCanvas.height = h;
+    overlayCtx.clearRect(0, 0, w, h);
+    drawOverlayText(overlayCtx, w, h);
+    drawLogo(overlayCtx, w, h);
+  }
+
+  // Đồng hồ nhảy giây -> cần vẽ lại overlay dù không có gì khác thay đổi
+  setInterval(invalidateOverlayCache, 1000);
+  // Gõ chữ trong ô to hoặc bấm Đồng ý/Huỷ đều phải làm mới overlay ngay
+  bigEdit.addEventListener('input', invalidateOverlayCache);
+  bigEditOk.addEventListener('click', invalidateOverlayCache);
+  bigEditCancel.addEventListener('click', invalidateOverlayCache);
 
   // ---------- Vẽ 4 dòng ghi chú "Nhãn : giá trị" ở góc dưới ảnh, tự xuống dòng khi dài ----------
   function drawOverlayText(context, w, h){
@@ -1122,32 +1122,48 @@
   const logoImg = new Image();
   logoImg.crossOrigin = 'anonymous'; // cần để canvas không bị "tainted" khi export ảnh (toDataURL)
   let logoLoaded = false;
-  logoImg.onload = () => { logoLoaded = true; };
+  logoImg.onload = () => { logoLoaded = true; invalidateOverlayCache(); };
   logoImg.onerror = () => { logoLoaded = false; console.warn('Không tải được logo PNG'); };
   logoImg.src = 'https://i.ibb.co/SwW8gKJK/Pico-Play-We-Create-Fun-Colour-White.png';
 
   function drawLogo(context, w, h){
     if(!logoLoaded || !logoImg.naturalWidth) return;
-    const isLandscape = w > h;
-    const basis = Math.min(w, h);              // dùng cạnh ngắn hơn làm chuẩn, để logo không bị to bất thường khi xoay ngang
-    const scale = isLandscape ? 0.15 : 0.18;    // chiều ngang dùng tỉ lệ nhỏ hơn
-    const logoW = basis * scale;
+    const logoW = w * 0.22;                                   // chỉnh tỉ lệ kích thước logo tại đây
     const logoH = logoW * (logoImg.naturalHeight / logoImg.naturalWidth);
-    const marginX = basis * 0.03;
-    const marginY = basis * 0.025;
+    const marginX = w * 0.03;
+    const marginY = h * 0.025;
     context.drawImage(logoImg, w - logoW - marginX, marginY, logoW, logoH);
   }
 
-  function loop(){
-    const curW = video.videoWidth, curH = video.videoHeight;
-    if(video.readyState >= 2 && curW && curH && stage.width && stage.height){
-      vw = curW; vh = curH; // giữ đồng bộ để capture() dùng lại nếu cần
-      const crop = computeCoverCrop(curW, curH, stage.width, stage.height);
-      ctx.drawImage(video, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, stage.width, stage.height);
-      drawOverlayText(ctx, stage.width, stage.height);
-      drawLogo(ctx, stage.width, stage.height);
+  function renderFrame(){
+    if(video.readyState >= 2 && vw && vh && stage.width && stage.height){
+      const w = stage.width, h = stage.height;
+      const crop = computeCoverCrop(vw, vh, w, h);
+      // 1) vẽ khung hình camera (rẻ, GPU lo phần lớn)
+      ctx.drawImage(video, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, w, h);
+      // 2) chỉ vẽ lại chữ/logo khi nội dung thật sự đổi, còn lại chỉ ghép ảnh cache (rất rẻ)
+      rebuildOverlayCacheIfNeeded(w, h);
+      ctx.drawImage(overlayCanvas, 0, 0);
     }
-    rafId = requestAnimationFrame(loop);
+  }
+
+  // Ưu tiên requestVideoFrameCallback: chỉ vẽ lại khi camera THỰC SỰ có khung hình mới,
+  // tránh vẽ thừa (ví dụ camera 30fps mà rAF chạy 60fps thì phí hết một nửa số lần vẽ).
+  // Máy/trình duyệt không hỗ trợ thì rơi về requestAnimationFrame như cũ.
+  function loop(){
+    if('requestVideoFrameCallback' in HTMLVideoElement.prototype){
+      const onFrame = () => {
+        renderFrame();
+        rafId = video.requestVideoFrameCallback(onFrame);
+      };
+      rafId = video.requestVideoFrameCallback(onFrame);
+    } else {
+      const onTick = () => {
+        renderFrame();
+        rafId = requestAnimationFrame(onTick);
+      };
+      rafId = requestAnimationFrame(onTick);
+    }
   }
 
   // ---------- Khung viền kiểu ảnh Polaroid, mép xé giấy ----------
@@ -1230,23 +1246,20 @@
   });
 
   function capture(){
-    const curW = video.videoWidth, curH = video.videoHeight;
-    if(!curW || !curH || !stage.width || !stage.height){ showToast(t('toastCamNotReady')); return; }
+    if(!vw || !vh || !stage.width || !stage.height){ showToast(t('toastCamNotReady')); return; }
     flashEl.classList.add('on');
     setTimeout(()=> flashEl.classList.remove('on'), 180);
 
-    const crop = computeCoverCrop(curW, curH, stage.width, stage.height);
+    const crop = computeCoverCrop(vw, vh, stage.width, stage.height);
     const out = document.createElement('canvas');
     out.width = Math.round(crop.sw);
     out.height = Math.round(crop.sh);
     const octx = out.getContext('2d');
-    octx.imageSmoothingEnabled = true;
-    octx.imageSmoothingQuality = 'high';
     octx.drawImage(video, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, out.width, out.height);
     drawOverlayText(octx, out.width, out.height);
     drawLogo(octx, out.width, out.height);
 
-    const dataUrl = out.toDataURL('image/jpeg', 0.98);
+    const dataUrl = out.toDataURL('image/jpeg', 0.95);
     openPreview(dataUrl);
   }
 
