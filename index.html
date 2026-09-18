@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>Chụp ảnh + Ghi chú</title>
+<title>PPV - Progess photo</title>
 <style>
   :root{
     /* ----- Bảng màu mặc định: DARK ----- */
@@ -806,10 +806,7 @@
       const saved = localStorage.getItem('cam_theme');
       if(saved === 'light' || saved === 'dark') return saved;
     }catch(e){}
-    try{
-      if(window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) return 'light';
-    }catch(e){}
-    return 'dark';
+    return 'dark'; // luôn mặc định dark, không theo cài đặt hệ thống máy
   }
   function applyTheme(theme){
     root.setAttribute('data-theme', theme);
@@ -1081,61 +1078,24 @@
     ], 'right');
   }
 
-  // ---------- Logo công ty (tái tạo vector tạm thời, xem ghi chú trong hội thoại) ----------
+  // ---------- Logo công ty (ảnh PNG thật, đặt góc trên-phải) ----------
+  const logoImg = new Image();
+  logoImg.crossOrigin = 'anonymous'; // cần để canvas không bị "tainted" khi export ảnh (toDataURL)
+  let logoLoaded = false;
+  logoImg.onload = () => { logoLoaded = true; };
+  logoImg.onerror = () => { logoLoaded = false; console.warn('Không tải được logo PNG'); };
+  logoImg.src = 'https://i.ibb.co/SwW8gKJK/Pico-Play-We-Create-Fun-Colour-White.png';
+
   function drawLogo(context, w, h){
-    const fontBig = Math.max(9, Math.round(w * 0.028));
-    const fontTag = Math.max(6, Math.round(w * 0.013));
-    const marginRight = w * 0.97;
-    const y1 = h * 0.055;
-
-    context.textBaseline = 'alphabetic';
-    context.textAlign = 'right';
-
-    // đo trước để canh trái các khối "pico ", "PL", tam giác, "Y"
-    context.font = `400 ${fontBig}px Georgia, "Times New Roman", serif`;
-    const wY = context.measureText('Y').width;
-    context.font = `800 ${fontBig}px Arial, sans-serif`;
-    const wPL = context.measureText('PL').width;
-    const triW = fontBig * 0.62;
-    context.font = `400 ${fontBig}px Georgia, "Times New Roman", serif`;
-    const wPico = context.measureText('pico ').width;
-
-    let cursorX = marginRight;
-    context.textAlign = 'left';
-    const startX = marginRight - (wPico + wPL + triW * 1.05 + wY);
-
-    // "pico"
-    context.font = `400 ${fontBig}px Georgia, "Times New Roman", serif`;
-    context.fillStyle = 'rgba(255,255,255,.96)';
-    context.fillText('pico ', startX, y1);
-
-    // "PL"
-    let x2 = startX + wPico;
-    context.font = `800 ${fontBig}px Arial, sans-serif`;
-    context.fillStyle = '#3fd0d6';
-    context.fillText('PL', x2, y1);
-
-    // tam giác cam thay chữ A
-    let x3 = x2 + wPL + triW * 0.05;
-    context.fillStyle = '#ff9d3c';
-    context.beginPath();
-    context.moveTo(x3 + triW * 0.5, y1 - fontBig * 0.78);
-    context.lineTo(x3, y1 - fontBig * 0.02);
-    context.lineTo(x3 + triW, y1 - fontBig * 0.02);
-    context.closePath();
-    context.fill();
-
-    // "Y"
-    let x4 = x3 + triW * 1.05;
-    context.font = `800 ${fontBig}px Arial, sans-serif`;
-    context.fillStyle = '#3fd0d6';
-    context.fillText('Y', x4, y1);
-
-    // tagline
-    context.font = `600 ${fontTag}px Arial, sans-serif`;
-    context.fillStyle = 'rgba(255,255,255,.9)';
-    context.textAlign = 'right';
-    context.fillText('We Create Fun', marginRight, y1 + fontTag * 1.5);
+    if(!logoLoaded || !logoImg.naturalWidth) return;
+    const isLandscape = w > h;
+    const basis = Math.min(w, h);              // dùng cạnh ngắn hơn làm chuẩn, để logo không bị to bất thường khi xoay ngang
+    const scale = isLandscape ? 0.15 : 0.22;    // chiều ngang dùng tỉ lệ nhỏ hơn
+    const logoW = basis * scale;
+    const logoH = logoW * (logoImg.naturalHeight / logoImg.naturalWidth);
+    const marginX = basis * 0.03;
+    const marginY = basis * 0.025;
+    context.drawImage(logoImg, w - logoW - marginX, marginY, logoW, logoH);
   }
 
   function loop(){
@@ -1143,6 +1103,7 @@
       const crop = computeCoverCrop(vw, vh, stage.width, stage.height);
       ctx.drawImage(video, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, stage.width, stage.height);
       drawOverlayText(ctx, stage.width, stage.height);
+      drawLogo(ctx, stage.width, stage.height);
     }
     rafId = requestAnimationFrame(loop);
   }
@@ -1238,6 +1199,7 @@
     const octx = out.getContext('2d');
     octx.drawImage(video, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, out.width, out.height);
     drawOverlayText(octx, out.width, out.height);
+    drawLogo(octx, out.width, out.height);
 
     const dataUrl = out.toDataURL('image/jpeg', 0.95);
     openPreview(dataUrl);
