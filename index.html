@@ -979,10 +979,11 @@
     context.font = `800 ${fontSize}px Arial, sans-serif`;
 
     const leftX = w * 0.035;
-    const rightX = w * 0.44;
+    const rightEdgeX = w * 0.965;
+    const colDivider = w * 0.46;
     const colGap = w * 0.02;
-    const maxWidthLeft = Math.max(fontSize * 3, rightX - leftX - colGap);
-    const maxWidthRight = Math.max(fontSize * 3, w * 0.965 - rightX);
+    const maxWidthLeft = Math.max(fontSize * 3, colDivider - leftX - colGap);
+    const maxWidthRight = Math.max(fontSize * 3, rightEdgeX - colDivider - colGap);
 
     // Bẻ 1 chuỗi thành nhiều dòng vừa với maxWidth; chuỗi/từ quá dài sẽ bẻ theo ký tự
     function wrapText(text, maxWidth){
@@ -1025,8 +1026,8 @@
       return wrapText(`${label} : ${value}`, maxWidth);
     }
 
-    function drawLine(text, x, y, color){
-      context.textAlign = 'left';
+    function drawLine(text, x, y, color, align){
+      context.textAlign = align || 'left';
       context.lineJoin = 'round';
       context.miterLimit = 2;
 
@@ -1048,11 +1049,11 @@
       context.shadowBlur = 0;
     }
 
-    function drawColumn(x, groups){
+    function drawColumn(x, groups, align){
       let y = startY;
       for(const group of groups){
         for(const line of group.lines){
-          drawLine(line, x, y, group.color);
+          drawLine(line, x, y, group.color, align);
           y += lineHeight;
         }
       }
@@ -1073,11 +1074,11 @@
     drawColumn(leftX, [
       { lines:itemLines, color:'#f2534d' },
       { lines:progressLines, color:'#21c2c8' }
-    ]);
-    drawColumn(rightX, [
+    ], 'left');
+    drawColumn(rightEdgeX, [
       { lines:projectLines, color:'#ff9d3c' },
       { lines:timeLines, color:'#3b8ef0' }
-    ]);
+    ], 'right');
   }
 
   // ---------- Logo công ty (tái tạo vector tạm thời, xem ghi chú trong hội thoại) ----------
