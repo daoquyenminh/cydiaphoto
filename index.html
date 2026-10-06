@@ -1177,17 +1177,21 @@
     const colGap = w * 0.02;
     const maxWidthLeft = Math.max(fontSize * 3, colDivider - leftX - colGap);
     const maxWidthRight = Math.max(fontSize * 3, rightEdgeX - colDivider - colGap);
+    const VALUE_COLOR = '#ffffff'; // chữ sau dấu ":" luôn màu trắng
 
-    // Bẻ 1 chuỗi thành nhiều dòng vừa với maxWidth; chuỗi/từ quá dài sẽ bẻ theo ký tự
-    function wrapText(text, maxWidth){
+    // Bẻ 1 chuỗi thành nhiều dòng; dòng đầu dùng maxWidth hẹp hơn (đã trừ phần nhãn "Label : "),
+    // các dòng sau (nếu value quá dài phải xuống dòng) dùng maxWidth đầy đủ.
+    function wrapVarying(text, firstMax, restMax){
       const lines = [];
+      let currentMax = firstMax;
       function hardBreak(str){
         let chunk = '';
         for(const ch of str){
           const test = chunk + ch;
-          if(chunk && context.measureText(test).width > maxWidth){
+          if(chunk && context.measureText(test).width > currentMax){
             lines.push(chunk);
             chunk = ch;
+            currentMax = restMax;
           } else {
             chunk = test;
           }
@@ -1197,15 +1201,16 @@
       const words = text.split(' ');
       let line = '';
       for(const word of words){
-        if(context.measureText(word).width > maxWidth){
-          if(line){ lines.push(line); line = ''; }
+        if(context.measureText(word).width > currentMax){
+          if(line){ lines.push(line); line = ''; currentMax = restMax; }
           line = hardBreak(word);
           continue;
         }
         const test = line ? line + ' ' + word : word;
-        if(context.measureText(test).width > maxWidth){
+        if(context.measureText(test).width > currentMax){
           lines.push(line);
           line = word;
+          currentMax = restMax;
         } else {
           line = test;
         }
@@ -1214,30 +1219,37 @@
       return lines;
     }
 
-    function buildLines(label, value, maxWidth){
+    // Trả về mảng các "dòng", mỗi dòng là mảng các đoạn {text, color}.
+    // Dòng đầu tiên = [nhãn màu riêng] + [phần đầu giá trị, màu trắng].
+    // Các dòng xuống hàng tiếp theo (nếu có) = chỉ phần giá trị còn lại, màu trắng.
+    function buildFieldLines(label, value, maxWidth, labelColor){
       if(!value) return [];
-      return wrapText(`${label} : ${value}`, maxWidth);
+      const labelText = label + ' : ';
+      const labelWidth = context.measureText(labelText).width;
+      const firstMax = Math.max(fontSize * 2, maxWidth - labelWidth);
+      const valueLines = wrapVarying(value, firstMax, maxWidth);
+      return valueLines.map((lineText, idx) => {
+        if(idx === 0) return [{ text:labelText, color:labelColor }, { text:lineText, color:VALUE_COLOR }];
+        return [{ text:lineText, color:VALUE_COLOR }];
+      });
     }
 
-    function drawLine(text, x, y, color, align){
-      context.textAlign = align || 'left';
-      context.lineJoin = 'round';
-      context.miterLimit = 2;
+    // Vẽ 1 dòng gồm nhiều đoạn màu khác nhau, không viền đen, chỉ đổ bóng nhẹ cho dễ đọc.
+    function drawParts(parts, xRef, y, align){
+      context.textAlign = 'left';
+      let totalWidth = 0;
+      for(const p of parts) totalWidth += context.measureText(p.text).width;
+      let cx = align === 'right' ? xRef - totalWidth : xRef;
 
-      // viền đen mỏng làm nổi bật chữ
-      context.shadowColor = 'transparent';
-      context.shadowBlur = 0;
-      context.lineWidth = Math.max(1.5, fontSize * 0.16);
-      context.strokeStyle = 'rgba(0,0,0,.92)';
-      context.strokeText(text, x, y);
-
-      // đổ bóng nhẹ + tô màu chữ
-      context.shadowColor = 'rgba(0,0,0,.5)';
-      context.shadowBlur = fontSize * 0.18;
+      context.shadowColor = 'rgba(0,0,0,.55)';
+      context.shadowBlur = fontSize * 0.2;
       context.shadowOffsetX = 0;
       context.shadowOffsetY = fontSize * 0.05;
-      context.fillStyle = color;
-      context.fillText(text, x, y);
+      for(const p of parts){
+        context.fillStyle = p.color;
+        context.fillText(p.text, cx, y);
+        cx += context.measureText(p.text).width;
+      }
       context.shadowColor = 'transparent';
       context.shadowBlur = 0;
     }
@@ -1245,19 +1257,19 @@
     function drawColumn(x, groups, align){
       let y = startY;
       for(const group of groups){
-        for(const line of group.lines){
-          drawLine(line, x, y, group.color, align);
+        for(const lineParts of group.lines){
+          drawParts(lineParts, x, y, align);
           y += lineHeight;
         }
       }
     }
 
-    const itemLines = buildLines('Item', item, maxWidthLeft);
-    const teamLines = buildLines('Team', team, maxWidthLeft);
-    const stageLines = buildLines('Stage', stage, maxWidthLeft);
-    const progressLines = buildLines('Progress', progress, maxWidthLeft);
-    const projectLines = buildLines('Project', project, maxWidthRight);
-    const timeLines = buildLines('Time', time, maxWidthRight);
+    const itemLines = buildFieldLines('Item', item, maxWidthLeft, '#ff4d4d');
+    const teamLines = buildFieldLines('Team', team, maxWidthLeft, '#ffd84d');
+    const stageLines = buildFieldLines('Stage', stage, maxWidthLeft, '#ff9d3c');
+    const progressLines = buildFieldLines('Progress', progress, maxWidthLeft, '#6ec6ff');
+    const projectLines = buildFieldLines('Project', project, maxWidthRight, '#ff9d3c');
+    const timeLines = buildFieldLines('Time', time, maxWidthRight, '#6ec6ff');
 
     const leftLineCount = itemLines.length + teamLines.length + stageLines.length + progressLines.length;
     const rightLineCount = projectLines.length + timeLines.length;
@@ -1267,14 +1279,14 @@
     const startY = h - bottomPad - (maxLineCount - 1) * lineHeight;
 
     drawColumn(leftX, [
-      { lines:itemLines, color:'#f2534d' },
-      { lines:teamLines, color:'#f5a623' },
-      { lines:stageLines, color:'#34d399' },
-      { lines:progressLines, color:'#21c2c8' }
+      { lines:itemLines },
+      { lines:teamLines },
+      { lines:stageLines },
+      { lines:progressLines }
     ], 'left');
     drawColumn(rightEdgeX, [
-      { lines:projectLines, color:'#ff9d3c' },
-      { lines:timeLines, color:'#3b8ef0' }
+      { lines:projectLines },
+      { lines:timeLines }
     ], 'right');
   }
 
