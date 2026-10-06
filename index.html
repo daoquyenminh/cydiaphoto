@@ -184,6 +184,16 @@
     z-index:2;
   }
 
+  /* ---------- Góc trên camera: nút đổi giao diện + ngôn ngữ, luôn nổi trên cùng ---------- */
+  #topLeftControls{
+    position:absolute;
+    top:14px;left:14px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    z-index:50;
+  }
+
   /* ---------- Ô nhập phóng to đè lên camera khi đang gõ (bàn phím che phần dưới) ---------- */
   #bigEditWrap{
     position:absolute;
@@ -253,6 +263,103 @@
   #bigEditCancel{ background:rgba(70,20,20,.55); }
   #bigEditOk{ background:rgba(20,90,55,.6); }
 
+  /* ---------- Khối phóng to riêng cho Progress: số % to + thanh trượt ---------- */
+  #bigProgressWrap{
+    position:absolute;
+    top:6%;
+    left:50%;
+    width:88%;
+    max-width:88%;
+    transform:translate(-50%,-8px) scale(.97);
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    gap:10px;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .18s ease, transform .18s ease;
+    z-index:6;
+  }
+  #bigProgressWrap.show{ opacity:1; transform:translate(-50%,0) scale(1); pointer-events:auto; }
+  #bigProgressCard{
+    width:100%;
+    padding:22px 24px 26px;
+    border-radius:20px;
+    background:linear-gradient(135deg, var(--c-progress-a), var(--c-progress-b));
+    box-shadow:0 16px 38px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.2);
+  }
+  #bigProgressLabel{
+    font-size:14px;
+    font-weight:700;
+    font-style:italic;
+    letter-spacing:.2px;
+    color:rgba(255,255,255,.85);
+    text-align:center;
+    margin-bottom:4px;
+  }
+  #bigProgressValue{
+    display:flex;
+    align-items:baseline;
+    justify-content:center;
+    gap:4px;
+    margin-bottom:14px;
+    line-height:1.1;
+  }
+  #bigProgressInput{
+    width:auto;
+    max-width:55%;
+    background:transparent;
+    border:none;
+    outline:none;
+    font-family:inherit;
+    font-size:clamp(34px, 12vw, 56px);
+    font-weight:800;
+    color:#fff;
+    text-align:right;
+    caret-color:#fff;
+    -moz-appearance:textfield;
+  }
+  #bigProgressInput::-webkit-outer-spin-button,
+  #bigProgressInput::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+  #bigProgressPercentSign{
+    font-size:clamp(20px, 6vw, 32px);
+    font-weight:800;
+    color:rgba(255,255,255,.85);
+  }
+  #bigProgressSlider{
+    -webkit-appearance:none;
+    appearance:none;
+    width:100%;
+    height:10px;
+    border-radius:999px;
+    background:
+      linear-gradient(to right, var(--slider-fill) 0%, var(--slider-fill) var(--big-progress-pct, 0%), var(--slider-track) var(--big-progress-pct, 0%), var(--slider-track) 100%);
+    outline:none;
+    margin:0;
+  }
+  #bigProgressSlider::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:28px;height:28px;
+    border-radius:50%;
+    background:#ffffff;
+    box-shadow:0 3px 8px rgba(0,0,0,.45), 0 0 0 1px rgba(0,0,0,.08);
+    cursor:pointer;
+    margin-top:-9px;
+  }
+  #bigProgressSlider::-moz-range-thumb{
+    width:28px;height:28px;
+    border:none;
+    border-radius:50%;
+    background:#ffffff;
+    box-shadow:0 3px 8px rgba(0,0,0,.45);
+    cursor:pointer;
+  }
+  #bigProgressSlider::-moz-range-track{ height:10px; border-radius:999px; background:var(--slider-track); }
+  #bigProgressSlider::-moz-range-progress{ height:10px; border-radius:999px; background:var(--slider-fill); }
+  #bigProgressActions{ display:flex; gap:10px; justify-content:center; }
+  #bigProgressCancel{ background:rgba(70,20,20,.55); }
+  #bigProgressOk{ background:rgba(20,90,55,.6); }
+
   .glassBtn{
     width:44px;height:44px;
     border-radius:50%;
@@ -313,91 +420,39 @@
   .field-team{ background:linear-gradient(135deg, var(--c-team-a), var(--c-team-b)); }
   .field-stage{ background:linear-gradient(135deg, var(--c-stage-a), var(--c-stage-b)); }
 
-  /* ---------- Khối Progress: nhãn + số % + thanh kéo trượt ---------- */
+  /* ---------- Khối Progress: giờ nằm gọn trong hàng nút dưới cùng ---------- */
   #progressBox{
-    flex:1;
+    flex:0 0 auto;
     min-width:0;
     border:1px solid var(--glass-border);
-    border-radius:16px;
-    padding:10px 14px 12px;
+    border-radius:999px;
     box-shadow:inset 0 1px 0 var(--glass-hi), 0 4px 12px rgba(0,0,0,.18);
     backdrop-filter:blur(18px) saturate(180%);
     -webkit-backdrop-filter:blur(18px) saturate(180%);
     background:linear-gradient(135deg, var(--c-progress-a), var(--c-progress-b));
+    overflow:hidden;
+    cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
   }
-  #progressTop{
+  #progressSummary{
     display:flex;
     align-items:center;
-    justify-content:space-between;
-    gap:8px;
-    margin-bottom:8px;
+    justify-content:center;
+    gap:7px;
+    padding:9px 14px;
+    white-space:nowrap;
   }
-  #progressTop .progressLabel{
-    font-size:14px;
+  #progressSummary .progressLabel{
+    font-size:12px;
     font-weight:700;
     color:var(--field-text);
     letter-spacing:.1px;
   }
-  #progressNumWrap{
-    display:flex;
-    align-items:center;
-    gap:3px;
-    flex:0 0 auto;
-  }
-  #fieldProgress{
-    width:50px;
-    text-align:right;
-    background:rgba(255,255,255,.18);
-    border:1px solid rgba(255,255,255,.3);
-    border-radius:8px;
-    color:var(--field-text);
-    font-size:14px;
+  #progressValueDisplay{
+    font-size:12px;
     font-weight:700;
-    padding:5px 6px;
-    outline:none;
-    -moz-appearance:textfield;
-  }
-  #fieldProgress::-webkit-outer-spin-button,
-  #fieldProgress::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
-  #progressPercentSign{ font-size:14px; font-weight:700; color:var(--field-text); }
-
-  #progressSlider{
-    -webkit-appearance:none;
-    appearance:none;
-    width:100%;
-    height:6px;
-    border-radius:999px;
-    background:
-      linear-gradient(to right, var(--slider-fill) 0%, var(--slider-fill) var(--progress-pct, 0%), var(--slider-track) var(--progress-pct, 0%), var(--slider-track) 100%);
-    outline:none;
-    margin:0;
-  }
-  #progressSlider::-webkit-slider-thumb{
-    -webkit-appearance:none;
-    width:20px;height:20px;
-    border-radius:50%;
-    background:var(--slider-thumb);
-    box-shadow:0 2px 6px rgba(0,0,0,.4), 0 0 0 1px rgba(0,0,0,.08);
-    cursor:pointer;
-    margin-top:-7px;
-  }
-  #progressSlider::-moz-range-thumb{
-    width:20px;height:20px;
-    border:none;
-    border-radius:50%;
-    background:var(--slider-thumb);
-    box-shadow:0 2px 6px rgba(0,0,0,.4);
-    cursor:pointer;
-  }
-  #progressSlider::-moz-range-track{
-    height:6px;
-    border-radius:999px;
-    background:var(--slider-track);
-  }
-  #progressSlider::-moz-range-progress{
-    height:6px;
-    border-radius:999px;
-    background:var(--slider-fill);
+    color:var(--field-text);
+    opacity:.9;
   }
 
   #captureRow{
@@ -479,39 +534,6 @@
   }
   .pillBtn:active{ transform:scale(.94); }
 
-  .comboBtn{
-    display:flex;
-    flex-direction:row;
-    align-items:center;
-    gap:8px;
-    font-family:inherit;
-    background:var(--btn-bg);
-    border:1px solid var(--btn-border);
-    border-radius:999px;
-    padding:8px 14px 8px 10px;
-    cursor:pointer;
-    -webkit-appearance:none;
-    appearance:none;
-    backdrop-filter:blur(14px) saturate(180%);
-    -webkit-backdrop-filter:blur(14px) saturate(180%);
-    box-shadow:0 4px 14px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.1);
-  }
-  .comboBtn:active{ transform:scale(.95); }
-  .comboIcon{
-    width:26px;height:26px;
-    flex:0 0 auto;
-    display:flex;align-items:center;justify-content:center;
-    font-size:17px;
-    color:var(--btn-icon);
-  }
-  .comboText{
-    font-size:12px;
-    font-weight:600;
-    letter-spacing:.2px;
-    color:var(--text);
-    white-space:nowrap;
-  }
-
   /* ---------- LANDSCAPE LAYOUT ---------- */
   @media (orientation: landscape){
     #app{ flex-direction:row; }
@@ -541,13 +563,7 @@
     .glassBtn{ width:38px; height:38px; font-size:16px; }
     #captureBtn{ width:52px; height:52px; }
     .pillLabel, .pillBtn{ font-size:10.5px; padding:6px 9px; }
-    .comboBtn{
-      flex-direction:column;
-      gap:2px;
-      padding:7px 8px;
-    }
-    .comboIcon{ width:22px; height:22px; font-size:15px; }
-    .comboText{ font-size:9.5px; }
+    #topLeftControls{ top:10px; left:10px; gap:6px; }
     #camWrap{ aspect-ratio:4/3; }
   }
 
@@ -675,11 +691,29 @@
       <video id="video" playsinline autoplay muted></video>
       <canvas id="stage"></canvas>
       <div id="camStatus">Đang bật camera…</div>
+      <div id="topLeftControls">
+        <button id="themeBtn" class="glassBtn" title="Đổi giao diện sáng/tối">🌙</button>
+        <button id="langBtn" class="pillBtn" title="Chuyển ngôn ngữ / Switch language">VI</button>
+      </div>
       <div id="bigEditWrap">
         <input id="bigEdit" type="text" autocomplete="off" maxlength="40">
         <div id="bigEditActions">
           <button type="button" id="bigEditCancel" class="bigEditBtn">✕ <span id="bigEditCancelLabel">Huỷ</span></button>
           <button type="button" id="bigEditOk" class="bigEditBtn">✓ <span id="bigEditOkLabel">Đồng ý</span></button>
+        </div>
+      </div>
+      <div id="bigProgressWrap">
+        <div id="bigProgressCard">
+          <div id="bigProgressLabel">Progress</div>
+          <div id="bigProgressValue">
+            <input id="bigProgressInput" type="number" min="0" max="100" step="1" inputmode="numeric" value="0">
+            <span id="bigProgressPercentSign">%</span>
+          </div>
+          <input id="bigProgressSlider" type="range" min="0" max="100" step="1" value="0">
+        </div>
+        <div id="bigProgressActions">
+          <button type="button" id="bigProgressCancel" class="bigEditBtn">✕ <span id="bigProgressCancelLabel">Huỷ</span></button>
+          <button type="button" id="bigProgressOk" class="bigEditBtn">✓ <span id="bigProgressOkLabel">Đồng ý</span></button>
         </div>
       </div>
     </div>
@@ -694,31 +728,21 @@
       <input id="fieldTeam" class="field field-team" type="text" placeholder="Team (Đội nhóm)" maxlength="40" autocomplete="off">
       <input id="fieldStage" class="field field-stage" type="text" placeholder="Stage (Giai đoạn)" maxlength="40" autocomplete="off">
     </div>
-    <div class="row">
-      <div id="progressBox">
-        <div id="progressTop">
-          <span class="progressLabel">Progress</span>
-          <div id="progressNumWrap">
-            <input id="fieldProgress" type="number" min="0" max="100" step="1" placeholder="0" inputmode="numeric">
-            <span id="progressPercentSign">%</span>
-          </div>
-        </div>
-        <input id="progressSlider" type="range" min="0" max="100" step="1" value="0">
-      </div>
-    </div>
     <div id="captureRow">
       <div class="ctrlWrap left">
-        <button id="switchBtn" class="comboBtn" title="Tải lại camera">
-          <span class="comboIcon">⟲</span>
-          <span id="reloadLabel" class="comboText">Tải lại camera</span>
-        </button>
+        <button id="switchBtn" class="glassBtn" title="Tải lại camera">⟲</button>
       </div>
       <div class="captureWrap">
         <button id="captureBtn" title="Chụp"></button>
       </div>
       <div class="ctrlWrap right">
-        <button id="themeBtn" class="glassBtn" title="Đổi giao diện sáng/tối">🌙</button>
-        <button id="langBtn" class="pillBtn" title="Chuyển ngôn ngữ / Switch language">VI</button>
+        <div id="progressBox">
+          <div id="progressSummary">
+            <span class="progressLabel">Progress</span>
+            <span id="progressValueDisplay">0%</span>
+          </div>
+          <input id="fieldProgress" type="hidden" value="0">
+        </div>
       </div>
     </div>
   </div>
@@ -756,7 +780,6 @@
   const previewOk = document.getElementById('previewOk');
   const previewCancel = document.getElementById('previewCancel');
   const modalTitle = document.getElementById('modalTitle');
-  const reloadLabel = document.getElementById('reloadLabel');
   const langBtn = document.getElementById('langBtn');
   const root = document.documentElement;
 
@@ -829,7 +852,6 @@
     fieldTeam.placeholder = t('phTeam');
     fieldStage.placeholder = t('phStage');
 
-    reloadLabel.textContent = t('reloadCamera');
     switchBtn.title = t('reloadCamera');
     captureBtn.title = t('captureLabel');
     themeBtn.title = t('themeTooltip');
@@ -842,6 +864,9 @@
     previewImg.alt = t('altPhoto');
     bigEditCancelLabel.textContent = t('cancelLabel');
     bigEditOkLabel.textContent = t('confirmLabel');
+    bigProgressLabel.textContent = t('phProgress');
+    bigProgressCancelLabel.textContent = t('cancelLabel');
+    bigProgressOkLabel.textContent = t('confirmLabel');
 
     if(camStatus.style.display !== 'none'){
       camStatus.textContent = t(camStatusKey);
@@ -858,13 +883,22 @@
   const fieldTeam = document.getElementById('fieldTeam');
   const fieldStage = document.getElementById('fieldStage');
   const fieldProgress = document.getElementById('fieldProgress');
-  const progressSlider = document.getElementById('progressSlider');
+  const progressSummary = document.getElementById('progressSummary');
+  const progressValueDisplay = document.getElementById('progressValueDisplay');
   const bigEdit = document.getElementById('bigEdit');
   const bigEditWrap = document.getElementById('bigEditWrap');
   const bigEditOk = document.getElementById('bigEditOk');
   const bigEditCancel = document.getElementById('bigEditCancel');
   const bigEditOkLabel = document.getElementById('bigEditOkLabel');
   const bigEditCancelLabel = document.getElementById('bigEditCancelLabel');
+  const bigProgressWrap = document.getElementById('bigProgressWrap');
+  const bigProgressInput = document.getElementById('bigProgressInput');
+  const bigProgressSlider = document.getElementById('bigProgressSlider');
+  const bigProgressOk = document.getElementById('bigProgressOk');
+  const bigProgressCancel = document.getElementById('bigProgressCancel');
+  const bigProgressLabel = document.getElementById('bigProgressLabel');
+  const bigProgressOkLabel = document.getElementById('bigProgressOkLabel');
+  const bigProgressCancelLabel = document.getElementById('bigProgressCancelLabel');
 
   // ---------- Ô nhập phóng to đè lên camera, gõ trực tiếp vào đây ----------
   // Bàn phím trên điện thoại thường che mất panel nhập liệu phía dưới,
@@ -889,21 +923,72 @@
   bindBigEdit(fieldTeam, 'field-team', 'phTeam');
   bindBigEdit(fieldStage, 'field-stage', 'phStage');
 
-  // ---------- Progress: nhập số trực tiếp + thanh kéo trượt, luôn đồng bộ 2 chiều ----------
+  // ---------- Progress: bấm vào ô sẽ nhảy ra khối phóng to đè lên camera, ----------
+  // có ô nhập số lớn + thanh kéo trượt, giống kiểu các ô Item/Project/Team/Stage.
   function setProgressPct(val){
     let n = Math.round(Number(val));
     if(isNaN(n)) n = 0;
     n = Math.max(0, Math.min(100, n));
     fieldProgress.value = n;
-    progressSlider.value = n;
-    progressSlider.style.setProperty('--progress-pct', n + '%');
+    progressValueDisplay.textContent = n + '%';
     invalidateOverlayCache();
+    return n;
   }
-  fieldProgress.addEventListener('input', ()=> setProgressPct(fieldProgress.value));
-  fieldProgress.addEventListener('blur', ()=> setProgressPct(fieldProgress.value || 0));
-  progressSlider.addEventListener('input', ()=> setProgressPct(progressSlider.value));
-  // Khởi tạo thanh trượt ở 0% khi tải trang
-  progressSlider.style.setProperty('--progress-pct', '0%');
+
+  function syncBigProgress(val){
+    const n = (()=>{
+      let x = Math.round(Number(val));
+      if(isNaN(x)) x = 0;
+      return Math.max(0, Math.min(100, x));
+    })();
+    bigProgressInput.value = n;
+    bigProgressSlider.value = n;
+    bigProgressSlider.style.setProperty('--big-progress-pct', n + '%');
+    return n;
+  }
+
+  let bigProgressOriginalValue = '0';
+
+  function openBigProgress(){
+    bigProgressOriginalValue = fieldProgress.value || '0';
+    syncBigProgress(fieldProgress.value || 0);
+    bigProgressWrap.classList.add('show');
+    bigProgressInput.focus();
+  }
+  function closeBigProgress(){
+    bigProgressWrap.classList.remove('show');
+    bigProgressInput.blur();
+  }
+
+  progressSummary.addEventListener('click', openBigProgress);
+
+  // Gõ số hoặc kéo thanh trượt sẽ áp dụng ngay lập tức (giống các ô Item/Project...)
+  bigProgressInput.addEventListener('input', ()=>{
+    const n = syncBigProgress(bigProgressInput.value);
+    setProgressPct(n);
+  });
+  bigProgressSlider.addEventListener('input', ()=>{
+    const n = syncBigProgress(bigProgressSlider.value);
+    setProgressPct(n);
+  });
+
+  // Giữ focus ô nhập khi chạm vào 2 nút, để xử lý xong rồi mới tắt bàn phím
+  bigProgressOk.addEventListener('pointerdown', (e)=> e.preventDefault());
+  bigProgressCancel.addEventListener('pointerdown', (e)=> e.preventDefault());
+
+  bigProgressOk.addEventListener('click', ()=>{
+    closeBigProgress(); // đồng ý: giá trị đã được áp dụng ngay khi chỉnh
+  });
+  bigProgressCancel.addEventListener('click', ()=>{
+    setProgressPct(bigProgressOriginalValue); // huỷ: khôi phục giá trị cũ
+    closeBigProgress();
+  });
+  bigProgressInput.addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter'){ e.preventDefault(); closeBigProgress(); }
+  });
+  // Lưu ý: KHÔNG đóng khi ô nhập mất focus (vd. chạm vào thanh trượt) — nếu không
+  // thanh trượt sẽ tự tắt giữa chừng khi vừa kéo xong. Chỉ đóng khi bấm Đồng ý/Huỷ
+  // hoặc nhấn Enter trên bàn phím (2 chỗ phía trên).
 
   bigEdit.addEventListener('input', ()=>{
     if(activeField) activeField.value = bigEdit.value;
