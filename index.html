@@ -38,11 +38,19 @@
     --c-progress-b: rgba(15, 140, 150, .24);
     --c-time-a: rgba(59, 142, 240, .32);
     --c-time-b: rgba(30, 95, 190, .24);
+    --c-team-a: rgba(245, 166, 35, .32);
+    --c-team-b: rgba(190, 120, 15, .24);
+    --c-stage-a: rgba(52, 211, 153, .32);
+    --c-stage-b: rgba(20, 160, 110, .24);
 
     --field-text:#ffffff;
     --field-placeholder: rgba(255,255,255,.85);
     --modal-bg: rgba(24,24,27,.96);
     --modal-overlay: rgba(0,0,0,.55);
+
+    --slider-track: rgba(255,255,255,.25);
+    --slider-fill: #21c2c8;
+    --slider-thumb: #ffffff;
 
     --safe-t: env(safe-area-inset-top, 0px);
     --safe-b: env(safe-area-inset-bottom, 0px);
@@ -87,11 +95,19 @@
     --c-progress-b: rgba(15, 140, 150, .24);
     --c-time-a: rgba(59, 142, 240, .32);
     --c-time-b: rgba(30, 95, 190, .24);
+    --c-team-a: rgba(245, 166, 35, .32);
+    --c-team-b: rgba(190, 120, 15, .24);
+    --c-stage-a: rgba(52, 211, 153, .32);
+    --c-stage-b: rgba(20, 160, 110, .24);
 
     --field-text:#000000;
     --field-placeholder: rgba(0,0,0,.75);
     --modal-bg: rgba(255,255,255,.97);
     --modal-overlay: rgba(20,30,24,.45);
+
+    --slider-track: rgba(20,40,25,.18);
+    --slider-fill: #0f8c91;
+    --slider-thumb: #ffffff;
 
     /* Ở nền sáng, viền/track trắng mờ gần như biến mất -> đổi sang tối để vẫn nổi bật như bên dark */
     --capture-ring: rgba(20,20,25,.78);
@@ -294,6 +310,95 @@
   .field-project{ background:linear-gradient(135deg, var(--c-project-a), var(--c-project-b)); }
   .field-progress{ background:linear-gradient(135deg, var(--c-progress-a), var(--c-progress-b)); }
   .field-time{ background:linear-gradient(135deg, var(--c-time-a), var(--c-time-b)); }
+  .field-team{ background:linear-gradient(135deg, var(--c-team-a), var(--c-team-b)); }
+  .field-stage{ background:linear-gradient(135deg, var(--c-stage-a), var(--c-stage-b)); }
+
+  /* ---------- Khối Progress: nhãn + số % + thanh kéo trượt ---------- */
+  #progressBox{
+    flex:1;
+    min-width:0;
+    border:1px solid var(--glass-border);
+    border-radius:16px;
+    padding:10px 14px 12px;
+    box-shadow:inset 0 1px 0 var(--glass-hi), 0 4px 12px rgba(0,0,0,.18);
+    backdrop-filter:blur(18px) saturate(180%);
+    -webkit-backdrop-filter:blur(18px) saturate(180%);
+    background:linear-gradient(135deg, var(--c-progress-a), var(--c-progress-b));
+  }
+  #progressTop{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    margin-bottom:8px;
+  }
+  #progressTop .progressLabel{
+    font-size:14px;
+    font-weight:700;
+    color:var(--field-text);
+    letter-spacing:.1px;
+  }
+  #progressNumWrap{
+    display:flex;
+    align-items:center;
+    gap:3px;
+    flex:0 0 auto;
+  }
+  #fieldProgress{
+    width:50px;
+    text-align:right;
+    background:rgba(255,255,255,.18);
+    border:1px solid rgba(255,255,255,.3);
+    border-radius:8px;
+    color:var(--field-text);
+    font-size:14px;
+    font-weight:700;
+    padding:5px 6px;
+    outline:none;
+    -moz-appearance:textfield;
+  }
+  #fieldProgress::-webkit-outer-spin-button,
+  #fieldProgress::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+  #progressPercentSign{ font-size:14px; font-weight:700; color:var(--field-text); }
+
+  #progressSlider{
+    -webkit-appearance:none;
+    appearance:none;
+    width:100%;
+    height:6px;
+    border-radius:999px;
+    background:
+      linear-gradient(to right, var(--slider-fill) 0%, var(--slider-fill) var(--progress-pct, 0%), var(--slider-track) var(--progress-pct, 0%), var(--slider-track) 100%);
+    outline:none;
+    margin:0;
+  }
+  #progressSlider::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:20px;height:20px;
+    border-radius:50%;
+    background:var(--slider-thumb);
+    box-shadow:0 2px 6px rgba(0,0,0,.4), 0 0 0 1px rgba(0,0,0,.08);
+    cursor:pointer;
+    margin-top:-7px;
+  }
+  #progressSlider::-moz-range-thumb{
+    width:20px;height:20px;
+    border:none;
+    border-radius:50%;
+    background:var(--slider-thumb);
+    box-shadow:0 2px 6px rgba(0,0,0,.4);
+    cursor:pointer;
+  }
+  #progressSlider::-moz-range-track{
+    height:6px;
+    border-radius:999px;
+    background:var(--slider-track);
+  }
+  #progressSlider::-moz-range-progress{
+    height:6px;
+    border-radius:999px;
+    background:var(--slider-fill);
+  }
 
   #captureRow{
     display:grid;
@@ -586,7 +691,20 @@
       <input id="fieldProject" class="field field-project" type="text" placeholder="Project (Tên dự án)" maxlength="40" autocomplete="off">
     </div>
     <div class="row">
-      <input id="fieldProgress" class="field field-progress" type="text" placeholder="Progress (Tiến trình)" maxlength="40" autocomplete="off">
+      <input id="fieldTeam" class="field field-team" type="text" placeholder="Team (Đội nhóm)" maxlength="40" autocomplete="off">
+      <input id="fieldStage" class="field field-stage" type="text" placeholder="Stage (Giai đoạn)" maxlength="40" autocomplete="off">
+    </div>
+    <div class="row">
+      <div id="progressBox">
+        <div id="progressTop">
+          <span class="progressLabel">Progress</span>
+          <div id="progressNumWrap">
+            <input id="fieldProgress" type="number" min="0" max="100" step="1" placeholder="0" inputmode="numeric">
+            <span id="progressPercentSign">%</span>
+          </div>
+        </div>
+        <input id="progressSlider" type="range" min="0" max="100" step="1" value="0">
+      </div>
     </div>
     <div id="captureRow">
       <div class="ctrlWrap left">
@@ -650,6 +768,8 @@
       phItem:'Item (Hạng mục)',
       phProject:'Project (Tên dự án)',
       phProgress:'Progress (Tiến trình)',
+      phTeam:'Team (Đội nhóm)',
+      phStage:'Stage (Giai đoạn)',
       reloadCamera:'Tải lại camera',
       captureLabel:'Chụp ảnh',
       langCode:'VI',
@@ -672,6 +792,8 @@
       phItem:'Item',
       phProject:'Project',
       phProgress:'Progress',
+      phTeam:'Team',
+      phStage:'Stage',
       reloadCamera:'Reload camera',
       captureLabel:'Capture',
       langCode:'EN',
@@ -704,7 +826,8 @@
 
     fieldItem.placeholder = t('phItem');
     fieldProject.placeholder = t('phProject');
-    fieldProgress.placeholder = t('phProgress');
+    fieldTeam.placeholder = t('phTeam');
+    fieldStage.placeholder = t('phStage');
 
     reloadLabel.textContent = t('reloadCamera');
     switchBtn.title = t('reloadCamera');
@@ -732,7 +855,10 @@
   // 4 trường ghi chú in lên ảnh, mỗi trường 1 màu riêng, dạng "Nhãn : giá trị"
   const fieldItem = document.getElementById('fieldItem');
   const fieldProject = document.getElementById('fieldProject');
+  const fieldTeam = document.getElementById('fieldTeam');
+  const fieldStage = document.getElementById('fieldStage');
   const fieldProgress = document.getElementById('fieldProgress');
+  const progressSlider = document.getElementById('progressSlider');
   const bigEdit = document.getElementById('bigEdit');
   const bigEditWrap = document.getElementById('bigEditWrap');
   const bigEditOk = document.getElementById('bigEditOk');
@@ -760,7 +886,24 @@
   }
   bindBigEdit(fieldItem, 'field-item', 'phItem');
   bindBigEdit(fieldProject, 'field-project', 'phProject');
-  bindBigEdit(fieldProgress, 'field-progress', 'phProgress');
+  bindBigEdit(fieldTeam, 'field-team', 'phTeam');
+  bindBigEdit(fieldStage, 'field-stage', 'phStage');
+
+  // ---------- Progress: nhập số trực tiếp + thanh kéo trượt, luôn đồng bộ 2 chiều ----------
+  function setProgressPct(val){
+    let n = Math.round(Number(val));
+    if(isNaN(n)) n = 0;
+    n = Math.max(0, Math.min(100, n));
+    fieldProgress.value = n;
+    progressSlider.value = n;
+    progressSlider.style.setProperty('--progress-pct', n + '%');
+    invalidateOverlayCache();
+  }
+  fieldProgress.addEventListener('input', ()=> setProgressPct(fieldProgress.value));
+  fieldProgress.addEventListener('blur', ()=> setProgressPct(fieldProgress.value || 0));
+  progressSlider.addEventListener('input', ()=> setProgressPct(progressSlider.value));
+  // Khởi tạo thanh trượt ở 0% khi tải trang
+  progressSlider.style.setProperty('--progress-pct', '0%');
 
   bigEdit.addEventListener('input', ()=>{
     if(activeField) activeField.value = bigEdit.value;
@@ -995,7 +1138,7 @@
   function invalidateOverlayCache(){ overlayDirty = true; }
 
   function rebuildOverlayCacheIfNeeded(w, h){
-    const key = `${w}x${h}|${fieldItem.value}|${fieldProject.value}|${fieldProgress.value}|${getCurrentTimeString()}|${logoLoaded}`;
+    const key = `${w}x${h}|${fieldItem.value}|${fieldProject.value}|${fieldTeam.value}|${fieldStage.value}|${fieldProgress.value}|${getCurrentTimeString()}|${logoLoaded}`;
     if(!overlayDirty && key === overlayLastKey) return;
     overlayDirty = false;
     overlayLastKey = key;
@@ -1018,7 +1161,9 @@
   function drawOverlayText(context, w, h){
     const item = fieldItem.value.trim();
     const project = fieldProject.value.trim();
-    const progress = fieldProgress.value.trim();
+    const team = fieldTeam.value.trim();
+    const stage = fieldStage.value.trim();
+    const progress = fieldProgress.value.trim() ? `${fieldProgress.value.trim()}%` : '';
     const time = getCurrentTimeString();
 
     const fontSize = Math.max(9, Math.round(w * 0.026));
@@ -1108,11 +1253,13 @@
     }
 
     const itemLines = buildLines('Item', item, maxWidthLeft);
+    const teamLines = buildLines('Team', team, maxWidthLeft);
+    const stageLines = buildLines('Stage', stage, maxWidthLeft);
     const progressLines = buildLines('Progress', progress, maxWidthLeft);
     const projectLines = buildLines('Project', project, maxWidthRight);
     const timeLines = buildLines('Time', time, maxWidthRight);
 
-    const leftLineCount = itemLines.length + progressLines.length;
+    const leftLineCount = itemLines.length + teamLines.length + stageLines.length + progressLines.length;
     const rightLineCount = projectLines.length + timeLines.length;
     const maxLineCount = Math.max(leftLineCount, rightLineCount, 1);
 
@@ -1121,6 +1268,8 @@
 
     drawColumn(leftX, [
       { lines:itemLines, color:'#f2534d' },
+      { lines:teamLines, color:'#f5a623' },
+      { lines:stageLines, color:'#34d399' },
       { lines:progressLines, color:'#21c2c8' }
     ], 'left');
     drawColumn(rightEdgeX, [
