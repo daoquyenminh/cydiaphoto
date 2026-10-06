@@ -590,7 +590,7 @@
     border:1px solid var(--toast-border);
     font-size:13px;
     font-weight:500;
-    z-index:50;
+    z-index:70;
     opacity:0;
     pointer-events:none;
     transition:opacity .25s ease;
@@ -713,6 +713,11 @@
     color:#ffffff;
     box-shadow:0 6px 16px rgba(47,150,70,.35);
   }
+  .modal-btn.share{
+    background:linear-gradient(135deg,#4aa3ff,#2f6fe0);
+    color:#ffffff;
+    box-shadow:0 6px 16px rgba(47,111,224,.35);
+  }
   .modal-btn:active{ filter:brightness(.92); }
 </style>
 </head>
@@ -795,6 +800,7 @@
     <div class="modal-actions">
       <button id="previewCancel" class="modal-btn cancel">Huỷ</button>
       <button id="previewOk" class="modal-btn ok">Lưu ảnh</button>
+      <button id="previewShare" class="modal-btn share">Chia sẻ</button>
     </div>
   </div>
 </div>
@@ -816,6 +822,7 @@
   const previewImg = document.getElementById('previewImg');
   const previewOk = document.getElementById('previewOk');
   const previewCancel = document.getElementById('previewCancel');
+  const previewShare = document.getElementById('previewShare');
   const modalTitle = document.getElementById('modalTitle');
   const modalNote = document.getElementById('modalNote');
   const langBtn = document.getElementById('langBtn');
@@ -840,10 +847,12 @@
       toastCamReloaded:'Đã tải lại camera',
       toastCamNotReady:'Camera chưa sẵn sàng',
       modalTitle:'Xem trước ảnh',
-      modalNote:'Đối với người dùng iPhone, ấn giữ mạnh vào màn hình, sau đó bấm "Lưu hình ảnh".',
+      modalNote:'Đối với người dùng iPhone, nhấn vào nút chia sẻ, sau đó bấm "Lưu hình ảnh".',
       modalCancel:'Huỷ',
       modalOk:'Lưu ảnh',
       toastSaved:'Đã lưu ảnh về máy ✓',
+      modalShare:'Chia sẻ',
+      toastShareUnsupported:'Thiết bị không hỗ trợ chia sẻ',
       altPhoto:'Ảnh vừa chụp',
       confirmLabel:'Đồng ý',
       cancelLabel:'Huỷ'
@@ -865,10 +874,12 @@
       toastCamReloaded:'Camera reloaded',
       toastCamNotReady:'Camera not ready',
       modalTitle:'Photo preview',
-      modalNote:'For iPhone users, press and hold firmly on the screen, then tap “Save Image.”',
+      modalNote:'For iPhone users, tap the Share button, then tap “Save Image.”',
       modalCancel:'Cancel',
       modalOk:'Save photo',
       toastSaved:'Photo saved ✓',
+      modalShare:'Share',
+      toastShareUnsupported:'Sharing is not supported on this device',
       altPhoto:'Captured photo',
       confirmLabel:'OK',
       cancelLabel:'Cancel'
@@ -904,6 +915,7 @@
     modalNote.textContent = t('modalNote');
     previewCancel.textContent = t('modalCancel');
     previewOk.textContent = t('modalOk');
+    previewShare.textContent = t('modalShare');
     previewImg.alt = t('altPhoto');
     bigEditCancelLabel.textContent = t('cancelLabel');
     bigEditOkLabel.textContent = t('confirmLabel');
@@ -1555,6 +1567,26 @@
   });
   previewCancel.addEventListener('click', ()=>{
     closePreview();
+  });
+
+  // Chia sẻ ảnh qua menu chia sẻ của hệ điều hành (Zalo, Messenger, AirDrop, ...)
+  previewShare.addEventListener('click', async ()=>{
+    if(!pendingDataUrl) return;
+    try{
+      const blob = await (await fetch(pendingDataUrl)).blob();
+      const pad = n => String(n).padStart(2,'0');
+      const ts = new Date();
+      const name = `anh_${ts.getFullYear()}${pad(ts.getMonth()+1)}${pad(ts.getDate())}_${pad(ts.getHours())}${pad(ts.getMinutes())}${pad(ts.getSeconds())}.jpg`;
+      const file = new File([blob], name, { type:'image/jpeg' });
+      if(navigator.canShare && navigator.canShare({ files:[file] })){
+        await navigator.share({ files:[file] });
+      } else {
+        showToast(t('toastShareUnsupported'));
+      }
+    }catch(e){
+      // Người dùng tự đóng menu chia sẻ (AbortError) thì bỏ qua, lỗi khác mới báo
+      if(!e || e.name !== 'AbortError') showToast(t('toastShareUnsupported'));
+    }
   });
 
   function capture(){
