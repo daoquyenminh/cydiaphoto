@@ -30,18 +30,18 @@
     --shadow-frame: 0 18px 50px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.08);
 
     /* Bảng màu 4 ô nhập, đồng bộ với màu chữ in trên ảnh */
-    --c-item-a: rgba(239, 68, 68, .32);
-    --c-item-b: rgba(180, 40, 45, .24);
-    --c-project-a: rgba(255, 157, 60, .32);
-    --c-project-b: rgba(210, 110, 25, .24);
-    --c-progress-a: rgba(33, 194, 200, .32);
-    --c-progress-b: rgba(15, 140, 150, .24);
-    --c-time-a: rgba(59, 142, 240, .32);
-    --c-time-b: rgba(30, 95, 190, .24);
-    --c-team-a: rgba(245, 166, 35, .32);
-    --c-team-b: rgba(190, 120, 15, .24);
-    --c-stage-a: rgba(52, 211, 153, .32);
-    --c-stage-b: rgba(20, 160, 110, .24);
+    --c-item-a: rgba(239, 68, 68, 1);
+    --c-item-b: rgba(180, 40, 45, 1);
+    --c-project-a: rgba(255, 157, 60, 1);
+    --c-project-b: rgba(210, 110, 25, 1);
+    --c-progress-a: rgba(33, 194, 200, 1);
+    --c-progress-b: rgba(15, 140, 150, 1);
+    --c-time-a: rgba(59, 142, 240, 1);
+    --c-time-b: rgba(30, 95, 190, 1);
+    --c-team-a: rgba(245, 166, 35, 1);
+    --c-team-b: rgba(190, 120, 15, 1);
+    --c-stage-a: rgba(52, 211, 153, 1);
+    --c-stage-b: rgba(20, 160, 110, 1);
 
     --field-text:#ffffff;
     --field-placeholder: rgba(255,255,255,.85);
@@ -88,18 +88,18 @@
     --shadow-panel-land: -10px 0 26px rgba(30,60,40,.14);
     --shadow-frame: 0 16px 40px rgba(30,60,40,.18), 0 0 0 1px rgba(20,40,25,.08);
 
-    --c-item-a: rgba(239, 68, 68, .32);
-    --c-item-b: rgba(180, 40, 45, .24);
-    --c-project-a: rgba(255, 157, 60, .32);
-    --c-project-b: rgba(210, 110, 25, .24);
-    --c-progress-a: rgba(33, 194, 200, .32);
-    --c-progress-b: rgba(15, 140, 150, .24);
-    --c-time-a: rgba(59, 142, 240, .32);
-    --c-time-b: rgba(30, 95, 190, .24);
-    --c-team-a: rgba(245, 166, 35, .32);
-    --c-team-b: rgba(190, 120, 15, .24);
-    --c-stage-a: rgba(52, 211, 153, .32);
-    --c-stage-b: rgba(20, 160, 110, .24);
+    --c-item-a: rgba(239, 68, 68, 1);
+    --c-item-b: rgba(180, 40, 45, 1);
+    --c-project-a: rgba(255, 157, 60, 1);
+    --c-project-b: rgba(210, 110, 25, 1);
+    --c-progress-a: rgba(33, 194, 200, 1);
+    --c-progress-b: rgba(15, 140, 150, 1);
+    --c-time-a: rgba(59, 142, 240, 1);
+    --c-time-b: rgba(30, 95, 190, 1);
+    --c-team-a: rgba(245, 166, 35, 1);
+    --c-team-b: rgba(190, 120, 15, 1);
+    --c-stage-a: rgba(52, 211, 153, 1);
+    --c-stage-b: rgba(20, 160, 110, 1);
 
     --field-text:#000000;
     --field-placeholder: rgba(0,0,0,.75);
@@ -247,17 +247,18 @@
     display:none;
     flex-wrap:wrap;
     justify-content:center;
-    gap:8px;
+    gap:11px;
   }
   #bigEditSuggest.show{ display:flex; }
   .suggestChip{
-    padding:8px 14px;
+    padding:13px 20px;
+    min-height:44px;
     border:1px solid rgba(255,255,255,.28);
     border-radius:999px;
     background:rgba(20,110,80,.55);
     color:#fff;
     font-family:inherit;
-    font-size:14px;
+    font-size:16px;
     font-weight:700;
     backdrop-filter:blur(14px) saturate(180%);
     -webkit-backdrop-filter:blur(14px) saturate(180%);
@@ -269,8 +270,9 @@
   .suggestChip:active{ transform:scale(.95); }
   /* Nút quay lại danh sách công đoạn chính: to hơn, màu cam nổi bật so với các nút gợi ý xanh */
   .suggestChip.back{
-    padding:11px 20px;
-    font-size:17px;
+    padding:14px 24px;
+    min-height:44px;
+    font-size:18px;
     font-weight:800;
     letter-spacing:.2px;
     color:#fff;
@@ -1356,6 +1358,8 @@
     { n:['Joinery','Mộc'], kids:[
       ['Cutting','Xẻ gỗ'], ['Assembly','Lắp ráp'], ['Grinding','Mài'],
       ['Apply Laminate','Dán Laminate'] ] },
+    { n:['CNC','CNC'], kids:[
+      ['Cutting','Phay'], ['Programming','Làm trình'] ] },
     { n:['Painting','Sơn'], kids:[
       ['Primer','Sơn lót'], ['Top coat','Sơn hoàn thiện'] ] },
     { n:['Primer','Sơn lót'], kids:[
