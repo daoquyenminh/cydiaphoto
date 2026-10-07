@@ -643,13 +643,21 @@
     /* Khi .row xếp dọc, flex:1 của .field bị hiểu là chiều CAO (basis 0) nên ô bị co lại;
        đặt flex:none để ô giữ đúng chiều cao var(--field-h) như lúc chụp dọc */
     .field{ flex:0 0 auto; }
+    /* Panel ngang hẹp: không đủ chỗ nhồi [icon trái] + [nút chụp] + [ô %] trên 1 hàng
+       -> xếp thành 3 hàng dọc, mỗi hàng tự căn giữa, cho rộng rãi và không đè lên nhau */
     #captureRow{
+      display:flex;
+      flex-direction:column;
+      align-items:stretch;
       margin-top:6px;
-      gap:6px;
+      gap:10px;
     }
-    .ctrlWrap{ gap:6px; }
-    .glassBtn{ width:38px; height:38px; font-size:16px; }
-    #captureBtn{ width:52px; height:52px; }
+    .ctrlWrap{ gap:10px; justify-content:center; justify-self:unset; }
+    .ctrlWrap.left, .ctrlWrap.right{ justify-self:unset; }
+    .captureWrap{ justify-content:center; }
+    .glassBtn{ width:40px; height:40px; font-size:16px; }
+    #captureBtn{ width:56px; height:56px; }
+    #progressBox{ width:100%; }
     .pillLabel, .pillBtn{ font-size:10.5px; padding:6px 9px; }
     #topLeftControls{ top:10px; left:10px; gap:6px; }
     #camWrap{ aspect-ratio:4/3; }
