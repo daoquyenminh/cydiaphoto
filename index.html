@@ -14,7 +14,2504 @@
     --muted:#9a9aa2;
 
     --glass-bg: rgba(30, 30, 34, .26);
+    --glass-border: rgba(255, 255, 255, .16);<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>PPV - Progess photo</title>
+<style>
+  :root{
+    /* ----- Bảng màu mặc định: DARK ----- */
+    --bg-1:#0a0a0c;
+    --bg-grad-a:#1c1c22;
+    --bg-grad-b:#14141a;
+    --text:#f2f2f4;
+    --muted:#9a9aa2;
+
+    --glass-bg: rgba(30, 30, 34, .26);
     --glass-border: rgba(255, 255, 255, .16);
+    --glass-hi: rgba(255, 255, 255, .22);
+
+    --btn-bg: rgba(28,28,30,.22);
+    --btn-border: rgba(255,255,255,.18);
+    --btn-icon:#ffffff;
+
+    --toast-bg: rgba(24,24,27,.45);
+    --toast-border: rgba(255,255,255,.16);
+    --toast-text:#ffffff;
+
+    --shadow-panel: 0 -14px 34px rgba(0,0,0,.35);
+    --shadow-panel-land: -14px 0 34px rgba(0,0,0,.35);
+    --shadow-frame: 0 18px 50px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.08);
+
+    /* Bảng màu 4 ô nhập, đồng bộ với màu chữ in trên ảnh */
+    --c-item-a: rgba(239, 68, 68, 1);
+    --c-item-b: rgba(180, 40, 45, 1);
+    --c-project-a: rgba(255, 157, 60, 1);
+    --c-project-b: rgba(210, 110, 25, 1);
+    --c-progress-a: rgba(33, 194, 200, 1);
+    --c-progress-b: rgba(15, 140, 150, 1);
+    --c-time-a: rgba(59, 142, 240, 1);
+    --c-time-b: rgba(30, 95, 190, 1);
+    --c-team-a: rgba(39, 123, 232, 1);
+    --c-team-b: rgba(30, 96, 181, 1);
+    --c-stage-a: rgba(52, 211, 153, 1);
+    --c-stage-b: rgba(20, 160, 110, 1);
+
+    --field-text:#ffffff;
+    --field-placeholder: rgba(255,255,255,.85);
+    --modal-bg: rgba(24,24,27,.96);
+    --modal-overlay: rgba(0,0,0,.55);
+
+    --slider-track: rgba(255,255,255,.25);
+    --slider-fill: #21c2c8;
+    --slider-thumb: #ffffff;
+
+    --field-h: 50px; /* chiều cao chung cho các ô input và ô Progress */
+    --safe-t: env(safe-area-inset-top, 0px);
+    --safe-b: env(safe-area-inset-bottom, 0px);
+    --safe-l: env(safe-area-inset-left, 0px);
+    --safe-r: env(safe-area-inset-right, 0px);
+
+    /* Nút chụp: vòng ngoài + track, để đồng bộ độ tương phản giữa 2 theme */
+    --capture-ring: rgba(255,255,255,.85);
+    --capture-track: rgba(255,255,255,.12);
+    --capture-fill: #ffffff;
+  }
+
+  /* ----- Bảng màu LIGHT ----- */
+  :root[data-theme="light"]{
+    --bg-1:#eef1ee;
+    --bg-grad-a:#ffffff;
+    --bg-grad-b:#e3ece2;
+    --text:#15201a;
+    --muted:#5d6b62;
+
+    --glass-bg: rgba(255, 255, 255, .28);
+    --glass-border: rgba(20, 40, 25, .10);
+    --glass-hi: rgba(255, 255, 255, .75);
+
+    --btn-bg: rgba(255,255,255,.28);
+    --btn-border: rgba(20,40,25,.12);
+    --btn-icon:#15201a;
+
+    --toast-bg: rgba(255,255,255,.5);
+    --toast-border: rgba(20,40,25,.10);
+    --toast-text:#15201a;
+
+    --shadow-panel: 0 -10px 26px rgba(30,60,40,.14);
+    --shadow-panel-land: -10px 0 26px rgba(30,60,40,.14);
+    --shadow-frame: 0 16px 40px rgba(30,60,40,.18), 0 0 0 1px rgba(20,40,25,.08);
+
+    --c-item-a: rgba(239, 68, 68, 1);
+    --c-item-b: rgba(180, 40, 45, 1);
+    --c-project-a: rgba(255, 157, 60, 1);
+    --c-project-b: rgba(210, 110, 25, 1);
+    --c-progress-a: rgba(33, 194, 200, 1);
+    --c-progress-b: rgba(15, 140, 150, 1);
+    --c-time-a: rgba(59, 142, 240, 1);
+    --c-time-b: rgba(30, 95, 190, 1);
+    --c-team-a: rgba(39, 123, 232, 1);
+    --c-team-b: rgba(30, 96, 181, 1);
+    --c-stage-a: rgba(52, 211, 153, 1);
+    --c-stage-b: rgba(20, 160, 110, 1);
+
+    --field-text:#000000;
+    --field-placeholder: rgba(0,0,0,.75);
+    --modal-bg: rgba(255,255,255,.97);
+    --modal-overlay: rgba(20,30,24,.45);
+
+    --slider-track: rgba(20,40,25,.18);
+    --slider-fill: #0f8c91;
+    --slider-thumb: #ffffff;
+
+    /* Ở nền sáng, viền/track trắng mờ gần như biến mất -> đổi sang tối để vẫn nổi bật như bên dark */
+    --capture-ring: rgba(20,20,25,.78);
+    --capture-track: rgba(20,20,25,.08);
+    --capture-fill: #ffffff;
+  }
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{
+    margin:0;padding:0;height:100%;
+    background:
+      radial-gradient(120% 90% at 15% 0%, var(--bg-grad-a) 0%, transparent 55%),
+      radial-gradient(120% 90% at 100% 100%, var(--bg-grad-b) 0%, transparent 55%),
+      var(--bg-1);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+    transition:background .25s ease, color .25s ease;
+  }
+
+  #app{
+    display:flex;
+    flex-direction:column;
+    height:100dvh;
+    width:100vw;
+    padding-top:var(--safe-t);
+    padding-bottom:var(--safe-b);
+    padding-left:var(--safe-l);
+    padding-right:var(--safe-r);
+  }
+
+  /* ---------- CAMERA ---------- */
+  #camArea{
+    flex:1 1 auto;
+    min-height:0;
+    min-width:0;
+    display:flex;
+    align-items:flex-start;   /* camera dán lên trên, không chừa khoảng trống phía trên */
+    justify-content:center;
+    overflow:hidden;
+    padding:6px 14px 14px;
+  }
+  #camWrap{
+    position:relative;
+    /* Khung camera tỉ lệ 3:4 khi dọc máy, tự đổi sang 4:3 khi xoay ngang */
+    aspect-ratio:3/4;
+    width:100%;
+    height:auto;
+    max-width:100%;
+    max-height:100%;
+    background:#000;
+    overflow:hidden;
+    border-radius:0;
+    box-shadow:var(--shadow-frame);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  /* Màn dọc: kéo dài khung camera xuống sát panel (thay vì cố định 3:4 làm thừa khoảng đen),
+     nhưng không dài quá tỉ lệ 2:3 */
+  @media (orientation: portrait){
+    #camWrap{
+      aspect-ratio:auto;
+      height:100%;
+      max-height:min(100%, calc((100vw - 28px - var(--safe-l) - var(--safe-r)) * 1.5));
+    }
+  }
+  #camWrap video{display:none;}
+  #stage{
+    width:100%;
+    height:100%;
+    display:block;
+  }
+  #camStatus{
+    position:absolute;
+    top:50%;left:50%;
+    transform:translate(-50%,-50%);
+    color:rgba(255,255,255,.75);
+    font-size:14px;
+    text-align:center;
+    padding:0 24px;
+    z-index:2;
+  }
+
+  /* ---------- Góc trên camera: nút đổi giao diện + ngôn ngữ, luôn nổi trên cùng ---------- */
+  #topLeftControls{
+    position:absolute;
+    top:14px;left:14px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    z-index:50;
+  }
+
+  /* ---------- Ô nhập phóng to đè lên camera khi đang gõ (bàn phím che phần dưới) ---------- */
+  #bigEditWrap{
+    position:absolute;
+    top:max(6%, 70px); /* né hai nút giao diện + ngôn ngữ ở góc trên */
+    left:50%;
+    width:88%;
+    max-width:88%;
+    transform:translate(-50%,-8px) scale(.97);
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    gap:10px;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .18s ease, transform .18s ease;
+    z-index:6;
+  }
+  #bigEditWrap.show{ opacity:1; transform:translate(-50%,0) scale(1); pointer-events:auto; }
+  #bigEdit{
+    width:100%;
+    padding:16px 24px;
+    border:none;
+    outline:none;
+    border-radius:20px;
+    font-family:inherit;
+    font-size:clamp(20px, 6vw, 36px);
+    font-weight:800;
+    color:#fff;
+    text-align:center;
+    caret-color:#fff;
+    line-height:1.25;
+    resize:none;              /* textarea: tự xuống dòng, không cho kéo tay */
+    overflow:hidden;
+    white-space:pre-wrap;
+    overflow-wrap:anywhere;
+    display:block;
+    max-height:40dvh;
+    box-shadow:0 16px 38px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.2);
+  }
+  #bigEdit::placeholder{ color:rgba(255,255,255,.8); font-style:italic; font-weight:700; }
+  #bigEdit.field-item{ background:linear-gradient(135deg, var(--c-item-a), var(--c-item-b)); }
+  #bigEdit.field-project{ background:linear-gradient(135deg, var(--c-project-a), var(--c-project-b)); }
+  #bigEdit.field-progress{ background:linear-gradient(135deg, var(--c-progress-a), var(--c-progress-b)); }
+
+  /* Hàng gợi ý (chỉ hiện khi đang sửa ô Công đoạn / Stage) */
+  #bigEditSuggest{
+    display:none;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:11px;
+  }
+  #bigEditSuggest.show{ display:flex; }
+  .suggestChip{
+    padding:13px 20px;
+    min-height:44px;
+    border:1px solid rgba(255,255,255,.28);
+    border-radius:999px;
+    background:rgba(20,110,80,.55);
+    color:#fff;
+    font-family:inherit;
+    font-size:16px;
+    font-weight:700;
+    backdrop-filter:blur(14px) saturate(180%);
+    -webkit-backdrop-filter:blur(14px) saturate(180%);
+    box-shadow:0 6px 16px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.14);
+    cursor:pointer;
+    -webkit-appearance:none;
+    appearance:none;
+  }
+  .suggestChip:active{ transform:scale(.95); }
+  /* Nút quay lại danh sách công đoạn chính: to hơn, màu cam nổi bật so với các nút gợi ý xanh */
+  .suggestChip.back{
+    padding:14px 24px;
+    min-height:44px;
+    font-size:18px;
+    font-weight:800;
+    letter-spacing:.2px;
+    color:#fff;
+    background:linear-gradient(135deg, #ffb347, #ff7a18);
+    border:1.5px solid rgba(255,255,255,.75);
+    text-shadow:0 1px 2px rgba(0,0,0,.35);
+    box-shadow:0 8px 20px rgba(255,122,24,.45), inset 0 1px 0 rgba(255,255,255,.4);
+  }
+
+  /* Dòng nhắc nằm giữa hàng gợi ý và 2 nút Huỷ/Đồng ý: nền đỏ, chữ vàng */
+  #bigEditHint{
+    display:none;
+    align-self:center;
+    background:#c62828;
+    color:#ffd84d;
+    border:1.5px solid rgba(255,216,77,.55);
+    border-radius:12px;
+    padding:8px 16px;
+    font-size:14px;
+    font-weight:800;
+    line-height:1.3;
+    text-align:center;
+    box-shadow:0 8px 20px rgba(198,40,40,.45);
+  }
+  #bigEditHint.show{ display:block; }
+
+  #bigEditActions{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+  }
+  .bigEditBtn{
+    flex:1;
+    max-width:160px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    padding:12px 14px;
+    border:1px solid rgba(255,255,255,.22);
+    border-radius:14px;
+    font-family:inherit;
+    font-size:14px;
+    font-weight:700;
+    letter-spacing:.2px;
+    color:#fff;
+    backdrop-filter:blur(18px) saturate(180%);
+    -webkit-backdrop-filter:blur(18px) saturate(180%);
+    box-shadow:0 8px 20px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.14);
+    cursor:pointer;
+    -webkit-appearance:none;
+    appearance:none;
+  }
+  .bigEditBtn:active{ transform:scale(.96); }
+  #bigEditCancel{ background:rgba(70,20,20,.55); }
+  #bigEditOk{ background:rgba(20,90,55,.6); }
+
+  /* ---------- Khối phóng to riêng cho Progress: số % to + thanh trượt ---------- */
+  #bigProgressWrap{
+    position:absolute;
+    top:max(6%, 70px); /* né hai nút giao diện + ngôn ngữ ở góc trên */
+    left:50%;
+    width:88%;
+    max-width:88%;
+    transform:translate(-50%,-8px) scale(.97);
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    gap:10px;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .18s ease, transform .18s ease;
+    z-index:6;
+  }
+  #bigProgressWrap.show{ opacity:1; transform:translate(-50%,0) scale(1); pointer-events:auto; }
+  #bigProgressCard{
+    width:100%;
+    padding:22px 24px 26px;
+    border-radius:20px;
+    background:linear-gradient(135deg, var(--c-progress-a), var(--c-progress-b));
+    box-shadow:0 16px 38px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.2);
+  }
+  #bigProgressLabel{
+    font-size:14px;
+    font-weight:700;
+    font-style:italic;
+    letter-spacing:.2px;
+    color:rgba(255,255,255,.85);
+    text-align:center;
+    margin-bottom:4px;
+  }
+  #bigProgressValue{
+    display:flex;
+    align-items:baseline;
+    justify-content:center;
+    gap:4px;
+    margin-bottom:14px;
+    line-height:1.1;
+  }
+  #bigProgressInput{
+    width:auto;
+    max-width:55%;
+    background:transparent;
+    border:none;
+    outline:none;
+    font-family:inherit;
+    font-size:clamp(34px, 12vw, 56px);
+    font-weight:800;
+    color:#fff;
+    text-align:right;
+    caret-color:#fff;
+    -moz-appearance:textfield;
+  }
+  #bigProgressInput::-webkit-outer-spin-button,
+  #bigProgressInput::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+  #bigProgressPercentSign{
+    font-size:clamp(20px, 6vw, 32px);
+    font-weight:800;
+    color:rgba(255,255,255,.85);
+  }
+  #bigProgressSlider{
+    -webkit-appearance:none;
+    appearance:none;
+    width:100%;
+    height:10px;
+    border-radius:999px;
+    background:
+      linear-gradient(to right, var(--slider-fill) 0%, var(--slider-fill) var(--big-progress-pct, 0%), var(--slider-track) var(--big-progress-pct, 0%), var(--slider-track) 100%);
+    outline:none;
+    margin:0;
+  }
+  #bigProgressSlider::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    width:28px;height:28px;
+    border-radius:50%;
+    background:#ffffff;
+    box-shadow:0 3px 8px rgba(0,0,0,.45), 0 0 0 1px rgba(0,0,0,.08);
+    cursor:pointer;
+    margin-top:-9px;
+  }
+  #bigProgressSlider::-moz-range-thumb{
+    width:28px;height:28px;
+    border:none;
+    border-radius:50%;
+    background:#ffffff;
+    box-shadow:0 3px 8px rgba(0,0,0,.45);
+    cursor:pointer;
+  }
+  #bigProgressSlider::-moz-range-track{ height:10px; border-radius:999px; background:var(--slider-track); }
+  #bigProgressSlider::-moz-range-progress{ height:10px; border-radius:999px; background:var(--slider-fill); }
+  #bigProgressActions{ display:flex; gap:10px; justify-content:center; }
+  #bigProgressCancel{ background:rgba(70,20,20,.55); }
+  #bigProgressOk{ background:rgba(20,90,55,.6); }
+
+  .glassBtn{
+    width:44px;height:44px;
+    border-radius:50%;
+    background:var(--btn-bg);
+    backdrop-filter:blur(22px) saturate(200%);
+    -webkit-backdrop-filter:blur(22px) saturate(200%);
+    border:1px solid var(--btn-border);
+    display:flex;align-items:center;justify-content:center;
+    font-size:19px;
+    color:var(--btn-icon);
+    box-shadow:0 4px 14px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.12);
+    flex:0 0 auto;
+  }
+  .glassBtn:active{ transform:scale(.92); }
+
+  /* ---------- PANEL (glass sheet) ---------- */
+  #panel{
+    flex:0 0 auto;
+    max-height:48dvh;
+    overflow-y:auto;
+    background:var(--glass-bg);
+    backdrop-filter:blur(36px) saturate(200%);
+    -webkit-backdrop-filter:blur(36px) saturate(200%);
+    border-top:1px solid var(--glass-border);
+    border-radius:26px 26px 0 0;
+    box-shadow:var(--shadow-panel), inset 0 1px 0 rgba(255,255,255,.08);
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    padding:16px 16px calc(14px + var(--safe-b));
+    gap:10px;
+  }
+  .row{ display:flex; gap:10px; }
+
+  .field{
+    flex:1;
+    min-width:0;
+    border:1px solid var(--glass-border);
+    border-radius:16px;
+    color:var(--field-text);
+    font-size:14px;
+    font-weight:600;
+    padding:0 14px;
+    height:var(--field-h);
+    outline:none;
+    width:100%;
+    letter-spacing:.1px;
+    box-shadow:inset 0 1px 0 var(--glass-hi), 0 4px 12px rgba(0,0,0,.18);
+    backdrop-filter:blur(18px) saturate(180%);
+    -webkit-backdrop-filter:blur(18px) saturate(180%);
+    transition:transform .12s ease;
+  }
+  .field:focus{ transform:scale(1.01); border-color:rgba(255,255,255,.45); }
+  .field::placeholder{ color:var(--field-placeholder); font-weight:600; }
+  .field-item{ background:linear-gradient(135deg, var(--c-item-a), var(--c-item-b)); }
+  .field-project{ background:linear-gradient(135deg, var(--c-project-a), var(--c-project-b)); }
+  .field-progress{ background:linear-gradient(135deg, var(--c-progress-a), var(--c-progress-b)); }
+  .field-time{ background:linear-gradient(135deg, var(--c-time-a), var(--c-time-b)); }
+  .field-team{ background:linear-gradient(135deg, var(--c-team-a), var(--c-team-b)); }
+  .field-stage{ background:linear-gradient(135deg, var(--c-stage-a), var(--c-stage-b)); }
+
+  /* Ô chưa điền (còn hiện placeholder): hiện dấu * đỏ nổi bật ở bên phải ô, tự mất khi đã có chữ */
+  :root{ --req-star: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cg stroke='%23ff3b30' stroke-width='3.2' stroke-linecap='round' fill='none'%3E%3Cpath d='M10 2.5v15M3.5 6.25l13 7.5M16.5 6.25l-13 7.5'/%3E%3C/g%3E%3C/svg%3E"); }
+  .field.field-item:placeholder-shown{ background:var(--req-star) no-repeat right 14px center / 18px 18px, linear-gradient(135deg, var(--c-item-a), var(--c-item-b)); }
+  .field.field-project:placeholder-shown{ background:var(--req-star) no-repeat right 14px center / 18px 18px, linear-gradient(135deg, var(--c-project-a), var(--c-project-b)); }
+  .field.field-team:placeholder-shown{ background:var(--req-star) no-repeat right 14px center / 18px 18px, linear-gradient(135deg, var(--c-team-a), var(--c-team-b)); }
+  .field.field-stage:placeholder-shown{ background:var(--req-star) no-repeat right 14px center / 18px 18px, linear-gradient(135deg, var(--c-stage-a), var(--c-stage-b)); }
+
+  /* ---------- Khối Progress: giờ nằm gọn trong hàng nút dưới cùng ---------- */
+  #progressBox{
+    flex:0 0 auto;
+    min-width:0;
+    height:var(--field-h);
+    display:flex;
+    align-items:stretch;
+    border:1px solid var(--glass-border);
+    border-radius:999px;
+    box-shadow:inset 0 1px 0 var(--glass-hi), 0 4px 12px rgba(0,0,0,.18);
+    backdrop-filter:blur(18px) saturate(180%);
+    -webkit-backdrop-filter:blur(18px) saturate(180%);
+    background:linear-gradient(135deg, var(--c-progress-a), var(--c-progress-b));
+    overflow:hidden;
+    cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+  }
+  /* Chưa chọn phần trăm (đang 0%): hiện dấu * đỏ ở bên phải ô, giống các ô nhập còn trống */
+  #progressBox.needs{
+    background:var(--req-star) no-repeat right 14px center / 18px 18px, linear-gradient(135deg, var(--c-progress-a), var(--c-progress-b));
+  }
+  #progressBox.needs #progressSummary{ padding-right:38px; }
+  #progressSummary{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:7px;
+    padding:0 14px;
+    width:100%;
+    white-space:nowrap;
+  }
+  #progressSummary .progressLabel{
+    font-size:12px;
+    font-weight:700;
+    color:var(--field-text);
+    letter-spacing:.1px;
+  }
+  #progressValueDisplay{
+    font-size:12px;
+    font-weight:700;
+    color:var(--field-text);
+    opacity:.9;
+  }
+
+  #captureRow{
+    display:grid;
+    grid-template-columns:1fr auto 1fr;
+    align-items:center;
+    gap:10px;
+    margin-top:4px;
+  }
+  .ctrlWrap{
+    display:flex;
+    flex-direction:row;
+    align-items:center;
+    gap:8px;
+    min-width:0;
+  }
+  .ctrlWrap.left{ justify-self:start; }
+  .ctrlWrap.right{ justify-self:end; }
+  .captureWrap{
+    display:flex;
+    flex-direction:row;
+    align-items:center;
+    gap:12px;
+    justify-self:center;
+  }
+  #captureBtn{
+    position:relative;
+    width:62px;height:62px;
+    border-radius:50%;
+    background:var(--capture-track);
+    backdrop-filter:blur(14px) saturate(180%);
+    -webkit-backdrop-filter:blur(14px) saturate(180%);
+    border:3px solid var(--capture-ring);
+    box-shadow:0 4px 16px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.2);
+    flex:0 0 auto;
+    transition:background .25s ease, border-color .25s ease;
+  }
+  #captureBtn::after{
+    content:"";
+    position:absolute;
+    inset:6px;
+    border-radius:50%;
+    background:var(--capture-fill);
+    box-shadow:inset 0 -2px 4px rgba(0,0,0,.08);
+    transition:background .25s ease;
+  }
+  #captureBtn:active{ transform:scale(.9); }
+  #captureBtn:active::after{ filter:brightness(.92); }
+  .pillLabel{
+    font-size:12px;
+    font-weight:600;
+    color:var(--text);
+    letter-spacing:.2px;
+    white-space:nowrap;
+    background:var(--btn-bg);
+    border:1px solid var(--btn-border);
+    padding:7px 12px;
+    border-radius:999px;
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+  }
+  .pillBtn{
+    font-family:inherit;
+    font-size:12px;
+    font-weight:700;
+    color:var(--text);
+    letter-spacing:.3px;
+    white-space:nowrap;
+    background:var(--btn-bg);
+    border:1px solid var(--btn-border);
+    padding:9px 14px;
+    border-radius:999px;
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    cursor:pointer;
+    -webkit-appearance:none;
+    appearance:none;
+    flex:0 0 auto;
+  }
+  .pillBtn:active{ transform:scale(.94); }
+
+  /* ---------- LANDSCAPE LAYOUT ---------- */
+  @media (orientation: landscape){
+    #app{ flex-direction:row; }
+    :root{ --field-h: 44px; }  /* màn ngang thấp: giữ ô nhập gọn như cũ */
+    #camArea{ flex:1 1 auto; min-width:0; align-items:center; padding:14px; }
+    #panel{
+      flex:0 0 auto;
+      width:min(38vw, 360px);
+      min-width:260px;
+      max-height:none;
+      height:100%;
+      border-top:none;
+      border-left:1px solid var(--glass-border);
+      border-radius:26px 0 0 26px;
+      box-shadow:var(--shadow-panel-land), inset 0 1px 0 rgba(255,255,255,.08);
+      justify-content:center;
+      align-items:stretch;
+      padding:18px calc(16px + var(--safe-r)) 18px 18px;
+      gap:14px;
+      overflow-y:auto;
+    }
+    .row{ flex-direction:column; flex:0 0 auto; }
+    /* Khi .row xếp dọc, flex:1 của .field bị hiểu là chiều CAO (basis 0) nên ô bị co lại;
+       đặt flex:none để ô giữ đúng chiều cao var(--field-h) như lúc chụp dọc */
+    .field{ flex:0 0 auto; }
+    /* Panel ngang hẹp: không đủ chỗ nhồi [icon trái] + [nút chụp] + [ô %] trên 1 hàng
+       -> xếp thành 3 hàng dọc, mỗi hàng tự căn giữa, cho rộng rãi và không đè lên nhau */
+    /* Màn ngang: hàng 1 = ô Progress (nằm ngay dưới ô Công đoạn),
+       hàng 2 = 3 nút nhỏ (tải lại camera, tải ảnh lên, thư viện) + nút chụp trên cùng 1 dòng */
+    #captureRow{
+      display:grid;
+      grid-template-columns:1fr auto 1fr;
+      align-items:center;
+      margin-top:0;
+      gap:14px 8px;
+    }
+    .ctrlWrap{ gap:6px; justify-content:center; justify-self:unset; }
+    .ctrlWrap.right{ grid-row:1; grid-column:1 / -1; justify-self:stretch; }
+    /* Tách 3 nút nhỏ ra khỏi nhóm bên trái để xếp riêng:
+       tải lại camera + tải ảnh lên ở bên trái, nút chụp ở giữa, ảnh đã chụp ở bên phải */
+    .ctrlWrap.left{ display:contents; }
+    #switchBtn, #uploadBtn{ grid-row:2; grid-column:1; justify-self:start; }
+    #uploadBtn{ margin-left:46px; }
+    #galleryBtn{ grid-row:2; grid-column:3; justify-self:end; }
+    .captureWrap{ grid-row:2; grid-column:2; justify-self:center; justify-content:center; }
+    .glassBtn{ width:40px; height:40px; font-size:16px; }
+    #captureBtn{ width:56px; height:56px; }
+    #progressBox{ width:100%; }
+    .pillLabel, .pillBtn{ font-size:10.5px; padding:6px 9px; }
+    #topLeftControls{ top:10px; left:10px; gap:6px; }
+    #camWrap{ aspect-ratio:4/3; }
+  }
+
+  #toast{
+    position:fixed;
+    bottom:calc(48dvh + 14px);
+    left:50%;
+    transform:translateX(-50%);
+    background:var(--toast-bg);
+    backdrop-filter:blur(22px) saturate(180%);
+    -webkit-backdrop-filter:blur(22px) saturate(180%);
+    color:var(--toast-text);
+    padding:10px 18px;
+    border-radius:999px;
+    border:1px solid var(--toast-border);
+    font-size:13px;
+    font-weight:500;
+    z-index:70;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .25s ease;
+    white-space:nowrap;
+  }
+  #toast.show{opacity:1;}
+  @media (orientation: landscape){
+    #toast{ bottom:18px; }
+  }
+  #flash{
+    position:fixed;
+    inset:0;
+    background:#fff;
+    opacity:0;
+    pointer-events:none;
+    z-index:40;
+  }
+  #flash.on{
+    opacity:.85;
+    transition:opacity .35s ease;
+  }
+
+  /* ---------- POPUP XEM TRƯỚC SAU KHI CHỤP ---------- */
+  #previewModal{
+    position:fixed;
+    inset:0;
+    z-index:60;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    background:var(--modal-overlay);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .2s ease;
+  }
+  #previewModal.show{ opacity:1; pointer-events:auto; }
+  /* Khối xếp dọc: thẻ ảnh phía trên, hàng nút Huỷ / Lưu ảnh nằm TÁCH RỜI bên dưới */
+  .modal-stack{
+    --modal-btn-gap: 44px;           /* khoảng trống giữa thẻ ảnh và hàng nút */
+    width:100%;
+    max-width:420px;
+    max-height:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    gap:var(--modal-btn-gap);
+  }
+  .modal-card{
+    width:100%;
+    max-width:420px;
+    min-height:0;
+    max-height:calc(88dvh - var(--modal-btn-gap) - 60px);
+    background:var(--modal-bg);
+    border:1px solid var(--glass-border);
+    border-radius:22px;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    box-shadow:0 24px 60px rgba(0,0,0,.45);
+    transform:scale(.95);
+    transition:transform .2s ease;
+  }
+  #previewModal.show .modal-card{ transform:scale(1); }
+  .modal-imgWrap{
+    background:#000;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    max-height:52dvh;
+    overflow:hidden;
+  }
+  .modal-imgWrap img{
+    display:block;
+    width:100%;
+    height:auto;
+    max-height:52dvh;
+    object-fit:contain;
+  }
+  .modal-title{
+    padding:14px 18px 4px;
+    font-size:15px;
+    font-weight:700;
+    color:var(--text);
+  }
+  .modal-noteWrap{ padding:12px 14px 14px; }
+  .modal-note{
+    background:#c62828;              /* nền đỏ */
+    color:#ffd84d;                   /* chữ vàng */
+    border-radius:12px;
+    padding:10px 14px;
+    font-size:13px;
+    font-weight:700;
+    line-height:1.45;
+    text-align:center;
+  }
+  .modal-actions{
+    display:flex;
+    gap:10px;
+    padding:0 0 var(--safe-b);
+  }
+  .modal-btn{
+    flex:1;
+    border:none;
+    border-radius:14px;
+    padding:13px 10px;
+    font-size:15px;
+    font-weight:700;
+    letter-spacing:.1px;
+  }
+  .modal-btn.cancel{
+    background:rgba(140,140,150,.18);
+    color:var(--text);
+    border:1px solid var(--glass-border);
+  }
+  .modal-btn.ok{
+    background:linear-gradient(135deg,#6fce6a,#3fae55);
+    color:#ffffff;
+    box-shadow:0 6px 16px rgba(47,150,70,.35);
+  }
+  .modal-btn.share{
+    background:linear-gradient(135deg,#4aa3ff,#2f6fe0);
+    color:#ffffff;
+    box-shadow:0 6px 16px rgba(47,111,224,.35);
+  }
+  .modal-btn:active{ filter:brightness(.92); }
+  .modal-btn.danger{
+    background:rgba(198,40,40,.22);
+    color:#ff8a80;
+    border:1px solid rgba(198,40,40,.4);
+  }
+  .modal-btn[disabled]{ opacity:.45; pointer-events:none; }
+
+  /* ---------- Nút mở thư viện ảnh đã chụp + badge số lượng ---------- */
+  #galleryBtn{ position:relative; }
+  #galleryBadge{
+    position:absolute;
+    top:-4px; right:-4px;
+    min-width:17px;
+    height:17px;
+    padding:0 4px;
+    border-radius:999px;
+    background:#e5484d;
+    color:#fff;
+    font-size:10px;
+    font-weight:800;
+    line-height:17px;
+    text-align:center;
+    box-shadow:0 0 0 2px var(--bg-1);
+  }
+
+  /* ---------- Modal thư viện ảnh ---------- */
+  #galleryModal{
+    position:fixed;
+    inset:0;
+    z-index:60;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    background:var(--modal-overlay);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .2s ease;
+  }
+  #galleryModal.show{ opacity:1; pointer-events:auto; }
+  .gallery-card{
+    width:100%;
+    max-width:460px;
+    max-height:88dvh;
+    background:var(--modal-bg);
+    border:1px solid var(--glass-border);
+    border-radius:22px;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    box-shadow:0 24px 60px rgba(0,0,0,.45);
+    transform:scale(.95);
+    transition:transform .2s ease;
+  }
+  #galleryModal.show .gallery-card{ transform:scale(1); }
+  .gallery-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 16px 10px;
+  }
+  .gallery-header .modal-title{ padding:0; }
+  .gallery-headerBtns{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex:0 0 auto;
+  }
+  /* Nút "Chọn tất cả / Bỏ chọn": to hơn, nền cam chữ trắng */
+  .gallery-linkBtn{
+    border:none;
+    background:linear-gradient(135deg, #ffb347, #ff7a18);
+    color:#ffffff;
+    font-size:15px;
+    font-weight:800;
+    padding:9px 18px;
+    border-radius:999px;
+    white-space:nowrap;
+    text-shadow:0 1px 2px rgba(0,0,0,.25);
+    box-shadow:0 6px 16px rgba(255,122,24,.4), inset 0 1px 0 rgba(255,255,255,.35);
+  }
+  .gallery-linkBtn:active{ transform:scale(.96); filter:brightness(.95); }
+  .gallery-linkBtn:disabled{ opacity:.45; box-shadow:none; }
+  #galleryCloseX{
+    width:30px;height:30px;
+    border-radius:50%;
+    border:none;
+    background:rgba(140,140,150,.2);
+    color:var(--text);
+    font-size:15px;
+    font-weight:700;
+    flex:0 0 auto;
+  }
+  .gallery-grid{
+    flex:1;
+    min-height:80px;
+    overflow-y:auto;
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:8px;
+    padding:4px 16px 14px;
+  }
+  .gallery-empty{
+    grid-column:1 / -1;
+    text-align:center;
+    color:var(--muted);
+    font-size:13px;
+    padding:30px 10px;
+  }
+  .gallery-thumb{
+    position:relative;
+    aspect-ratio:1/1;
+    border-radius:12px;
+    overflow:hidden;
+    border:2px solid transparent;
+    background:#000;
+  }
+  .gallery-thumb img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+  .gallery-thumb.selected{
+    border-color:#2f8fe0;
+    box-shadow:0 0 0 2px rgba(47,143,224,.35) inset;
+  }
+  .gallery-thumb .thumbCheck{
+    position:absolute;
+    top:5px; right:5px;
+    width:20px;height:20px;
+    border-radius:50%;
+    background:rgba(0,0,0,.45);
+    border:1.5px solid rgba(255,255,255,.8);
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;
+    font-size:12px;
+    line-height:1;
+  }
+  .gallery-thumb.selected .thumbCheck{
+    background:#2f8fe0;
+    border-color:#2f8fe0;
+  }
+  .gallery-thumb .thumbDelete{
+    position:absolute;
+    top:5px; left:5px;
+    width:20px;height:20px;
+    border-radius:50%;
+    background:rgba(0,0,0,.5);
+    border:1.5px solid rgba(255,255,255,.7);
+    color:#fff;
+    font-size:12px;
+    line-height:1;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .gallery-actions{
+    display:flex;
+    gap:8px;
+    padding:10px 16px calc(14px + var(--safe-b));
+    border-top:1px solid var(--glass-border);
+  }
+
+  /* ---------- Lightbox: xem ảnh phóng to từ thư viện ---------- */
+  #lightboxModal{
+    position:fixed;
+    inset:0;
+    z-index:65;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    background:rgba(0,0,0,.75);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .2s ease;
+  }
+  #lightboxModal.show{ opacity:1; pointer-events:auto; }
+  .lightbox-card{
+    position:relative;
+    width:100%;
+    max-width:460px;
+    max-height:90dvh;
+    background:var(--modal-bg);
+    border:1px solid var(--glass-border);
+    border-radius:22px;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    box-shadow:0 24px 60px rgba(0,0,0,.5);
+    transform:scale(.95);
+    transition:transform .2s ease;
+  }
+  #lightboxModal.show .lightbox-card{ transform:scale(1); }
+  .lightbox-closeX{
+    position:absolute;
+    top:10px; right:10px;
+    z-index:2;
+    width:32px;height:32px;
+    border-radius:50%;
+    border:none;
+    background:rgba(0,0,0,.55);
+    color:#fff;
+    font-size:15px;
+    font-weight:700;
+  }
+  .lightbox-imgWrap{
+    background:#000;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    max-height:70dvh;
+    overflow:hidden;
+  }
+  .lightbox-imgWrap img{
+    display:block;
+    width:100%;
+    height:auto;
+    max-height:70dvh;
+    object-fit:contain;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="camArea">
+    <div id="camWrap">
+      <video id="video" playsinline autoplay muted></video>
+      <canvas id="stage"></canvas>
+      <div id="camStatus">Đang bật camera…</div>
+      <div id="topLeftControls">
+        <button id="themeBtn" class="glassBtn" title="Đổi giao diện sáng/tối">🌙</button>
+        <button id="langBtn" class="pillBtn" title="Chuyển ngôn ngữ / Switch language">VI</button>
+      </div>
+      <div id="bigEditWrap">
+        <textarea id="bigEdit" rows="1" autocomplete="off" maxlength="80" spellcheck="false"></textarea>
+        <div id="bigEditSuggest"></div>
+        <div id="bigEditHint"></div>
+        <div id="bigEditActions">
+          <button type="button" id="bigEditCancel" class="bigEditBtn">✕ <span id="bigEditCancelLabel">Huỷ</span></button>
+          <button type="button" id="bigEditOk" class="bigEditBtn">✓ <span id="bigEditOkLabel">Đồng ý</span></button>
+        </div>
+      </div>
+      <div id="bigProgressWrap">
+        <div id="bigProgressCard">
+          <div id="bigProgressLabel">Progress</div>
+          <div id="bigProgressValue">
+            <input id="bigProgressInput" type="number" min="0" max="100" step="1" inputmode="numeric" value="0">
+            <span id="bigProgressPercentSign">%</span>
+          </div>
+          <input id="bigProgressSlider" type="range" min="0" max="100" step="1" value="0">
+        </div>
+        <div id="bigProgressActions">
+          <button type="button" id="bigProgressCancel" class="bigEditBtn">✕ <span id="bigProgressCancelLabel">Huỷ</span></button>
+          <button type="button" id="bigProgressOk" class="bigEditBtn">✓ <span id="bigProgressOkLabel">Đồng ý</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="panel">
+    <div class="row">
+      <input id="fieldItem" class="field field-item" type="text" placeholder="Item (Hạng mục)" maxlength="40" autocomplete="off">
+      <input id="fieldProject" class="field field-project" type="text" placeholder="Project (Tên dự án)" maxlength="40" autocomplete="off">
+    </div>
+    <div class="row">
+      <input id="fieldTeam" class="field field-team" type="text" placeholder="Team (Đội nhóm)" maxlength="40" autocomplete="off">
+      <input id="fieldStage" class="field field-stage" type="text" placeholder="Stage (Giai đoạn)" maxlength="40" autocomplete="off">
+    </div>
+    <div id="captureRow">
+      <div class="ctrlWrap left">
+        <button id="switchBtn" class="glassBtn" title="Tải lại camera">⟲</button>
+        <button id="uploadBtn" class="glassBtn" title="Tải ảnh từ album" aria-label="Tải ảnh từ album">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        </button>
+        <input id="uploadInput" type="file" accept="image/*" hidden>
+        <button id="galleryBtn" class="glassBtn" title="Xem ảnh đã chụp" aria-label="Xem ảnh đã chụp">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="15" height="15" rx="2"/><rect x="6" y="2" width="15" height="15" rx="2"/></svg>
+          <span id="galleryBadge" hidden>0</span>
+        </button>
+      </div>
+      <div class="captureWrap">
+        <button id="captureBtn" title="Chụp"></button>
+      </div>
+      <div class="ctrlWrap right">
+        <div id="progressBox" class="needs">
+          <div id="progressSummary">
+            <span class="progressLabel">Progress</span>
+            <span id="progressValueDisplay">0%</span>
+          </div>
+          <input id="fieldProgress" type="hidden" value="0">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="flash"></div>
+
+<div id="previewModal">
+  <div class="modal-stack">
+    <div class="modal-card">
+      <div id="modalTitle" class="modal-title">Xem trước ảnh</div>
+      <div class="modal-imgWrap"><img id="previewImg" alt="Ảnh vừa chụp"></div>
+      <div class="modal-noteWrap">
+        <div id="modalNote" class="modal-note"></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button id="previewCancel" class="modal-btn cancel">Chụp tiếp</button>
+      <button id="previewOk" class="modal-btn ok">Lưu ảnh</button>
+      <button id="previewShare" class="modal-btn share">Chia sẻ</button>
+    </div>
+  </div>
+</div>
+
+<div id="galleryModal">
+  <div class="gallery-card">
+    <div class="gallery-header">
+      <div id="galleryTitle" class="modal-title">Ảnh đã chụp</div>
+      <div class="gallery-headerBtns">
+        <button id="gallerySelectAll" class="gallery-linkBtn">Chọn tất cả</button>
+        <button id="galleryCloseX" aria-label="Đóng">✕</button>
+      </div>
+    </div>
+    <div id="galleryGrid" class="gallery-grid"></div>
+    <div class="gallery-actions">
+      <button id="galleryDeleteSel" class="modal-btn danger">Xoá</button>
+      <button id="galleryDownloadSel" class="modal-btn cancel">Tải về</button>
+      <button id="galleryShareSel" class="modal-btn share">Chia sẻ</button>
+    </div>
+  </div>
+</div>
+
+<div id="lightboxModal">
+  <div class="lightbox-card">
+    <button id="lightboxClose" class="lightbox-closeX" aria-label="Đóng">✕</button>
+    <div class="lightbox-imgWrap"><img id="lightboxImg" alt=""></div>
+    <div class="gallery-actions">
+      <button id="lightboxDelete" class="modal-btn danger">Xoá</button>
+      <button id="lightboxDownload" class="modal-btn cancel">Tải về</button>
+      <button id="lightboxShare" class="modal-btn share">Chia sẻ</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const video = document.getElementById('video');
+  const stage = document.getElementById('stage');
+  const ctx = stage.getContext('2d', { alpha: false }); // ảnh video luôn phủ kín khung -> tắt alpha cho nhẹ
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  const camStatus = document.getElementById('camStatus');
+  const switchBtn = document.getElementById('switchBtn');
+  const uploadBtn = document.getElementById('uploadBtn');
+  const uploadInput = document.getElementById('uploadInput');
+  const captureBtn = document.getElementById('captureBtn');
+  const themeBtn = document.getElementById('themeBtn');
+  const toastEl = document.getElementById('toast');
+  const flashEl = document.getElementById('flash');
+  const previewModal = document.getElementById('previewModal');
+  const galleryBtn = document.getElementById('galleryBtn');
+  const galleryBadge = document.getElementById('galleryBadge');
+  const galleryModal = document.getElementById('galleryModal');
+  const galleryGrid = document.getElementById('galleryGrid');
+  const galleryTitle = document.getElementById('galleryTitle');
+  const galleryCloseX = document.getElementById('galleryCloseX');
+  const galleryDeleteSel = document.getElementById('galleryDeleteSel');
+  const galleryDownloadSel = document.getElementById('galleryDownloadSel');
+  const galleryShareSel = document.getElementById('galleryShareSel');
+  const gallerySelectAll = document.getElementById('gallerySelectAll');
+  const lightboxModal = document.getElementById('lightboxModal');
+  const lightboxImg = document.getElementById('lightboxImg');
+  const lightboxClose = document.getElementById('lightboxClose');
+  const lightboxDelete = document.getElementById('lightboxDelete');
+  const lightboxDownload = document.getElementById('lightboxDownload');
+  const lightboxShare = document.getElementById('lightboxShare');
+  const previewImg = document.getElementById('previewImg');
+  const previewOk = document.getElementById('previewOk');
+  const previewCancel = document.getElementById('previewCancel');
+  const previewShare = document.getElementById('previewShare');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalNote = document.getElementById('modalNote');
+  const langBtn = document.getElementById('langBtn');
+  const root = document.documentElement;
+
+  // ---------- Đa ngôn ngữ (Tiếng Việt / English) ----------
+  const translations = {
+    vi:{
+      camLoading:'Đang bật camera…',
+      camError:'Không truy cập được camera. Vui lòng cho phép quyền camera trong trình duyệt.',
+      phItem:'Hạng mục',
+      phProject:'Tên dự án',
+      phProgress:'Phần trăm',
+      phTeam:'Tên tổ trưởng',
+      phStage:'Công đoạn',
+      reloadCamera:'Tải lại camera',
+      uploadTooltip:'Tải ảnh từ album',
+      galleryTooltip:'Xem ảnh đã chụp',
+      toastImgError:'Không mở được ảnh này',
+      captureLabel:'Chụp ảnh',
+      langCode:'VI',
+      themeTooltip:'Đổi giao diện sáng/tối',
+      langTooltip:'Chuyển ngôn ngữ',
+      toastOneCam:'Thiết bị chỉ có 1 camera',
+      toastCamReloaded:'Đã tải lại camera',
+      toastCamNotReady:'Camera chưa sẵn sàng',
+      modalTitle:'Xem trước ảnh',
+      modalNote:'Đối với người dùng iPhone, nhấn vào nút chia sẻ, sau đó bấm "Lưu hình ảnh".',
+      modalCancel:'Chụp tiếp',
+      modalOk:'Lưu ảnh',
+      toastSaved:'Đã lưu ảnh về máy ✓',
+      modalShare:'Chia sẻ',
+      toastShareUnsupported:'Thiết bị không hỗ trợ chia sẻ',
+      galleryTitle:'Ảnh đã chụp',
+      galleryEmpty:'Chưa có ảnh nào được lưu',
+      gallerySelectAll:'Chọn tất cả',
+      galleryDeselectAll:'Bỏ chọn',
+      altPhoto:'Ảnh vừa chụp',
+      bigEditHint:'Vui lòng chọn hoặc tự điền',
+      confirmLabel:'Đồng ý',
+      cancelLabel:'Huỷ'
+    },
+    en:{
+      camLoading:'Turning on camera…',
+      camError:'Could not access camera. Please allow camera permission in your browser.',
+      phItem:'Item',
+      phProject:'Project',
+      phProgress:'Progress',
+      phTeam:'Team leader',
+      phStage:'Stage',
+      reloadCamera:'Reload camera',
+      uploadTooltip:'Upload from album',
+      galleryTooltip:'View captured photos',
+      toastImgError:'Could not open this image',
+      captureLabel:'Capture',
+      langCode:'EN',
+      themeTooltip:'Toggle light / dark mode',
+      langTooltip:'Switch language',
+      toastOneCam:'This device only has 1 camera',
+      toastCamReloaded:'Camera reloaded',
+      toastCamNotReady:'Camera not ready',
+      modalTitle:'Photo preview',
+      modalNote:'For iPhone users, tap the Share button, then tap “Save Image.”',
+      modalCancel:'Shoot again',
+      modalOk:'Save photo',
+      toastSaved:'Photo saved ✓',
+      modalShare:'Share',
+      toastShareUnsupported:'Sharing is not supported on this device',
+      galleryTitle:'Captured photos',
+      galleryEmpty:'No photos saved yet',
+      gallerySelectAll:'Select all',
+      galleryDeselectAll:'Deselect',
+      altPhoto:'Captured photo',
+      bigEditHint:'Please choose or type your own',
+      confirmLabel:'OK',
+      cancelLabel:'Cancel'
+    }
+  };
+  let currentLang = 'vi';
+  try{
+    const savedLang = localStorage.getItem('cam_lang');
+    if(savedLang === 'vi' || savedLang === 'en') currentLang = savedLang;
+  }catch(e){}
+  function t(key){ return translations[currentLang][key]; }
+
+  let camStatusKey = 'camLoading'; // theo dõi thông điệp camera đang hiển thị để dịch lại khi đổi ngôn ngữ
+
+  const progressLabelEl = document.querySelector('#progressSummary .progressLabel');
+
+  function applyLanguage(lang){
+    currentLang = lang;
+    try{ localStorage.setItem('cam_lang', lang); }catch(e){}
+
+    fieldItem.placeholder = t('phItem');
+    fieldProject.placeholder = t('phProject');
+    fieldTeam.placeholder = t('phTeam');
+    fieldStage.placeholder = t('phStage');
+
+    switchBtn.title = t('reloadCamera');
+    uploadBtn.title = t('uploadTooltip');
+    galleryBtn.title = t('galleryTooltip');
+    uploadBtn.setAttribute('aria-label', t('uploadTooltip'));
+    captureBtn.title = t('captureLabel');
+    themeBtn.title = t('themeTooltip');
+    langBtn.title = t('langTooltip');
+    langBtn.textContent = t('langCode');
+
+    modalTitle.textContent = t('modalTitle');
+    modalNote.textContent = t('modalNote');
+    previewCancel.textContent = t('modalCancel');
+    previewOk.textContent = t('modalOk');
+    previewShare.textContent = t('modalShare');
+    previewImg.alt = t('altPhoto');
+    bigEditCancelLabel.textContent = t('cancelLabel');
+    bigEditOkLabel.textContent = t('confirmLabel');
+    renderStageSuggestions();
+    bigEditHint.textContent = t('bigEditHint');
+    bigProgressLabel.textContent = t('phProgress');
+    progressLabelEl.textContent = t('phProgress');
+    bigProgressCancelLabel.textContent = t('cancelLabel');
+    bigProgressOkLabel.textContent = t('confirmLabel');
+
+    if(camStatus.style.display !== 'none'){
+      camStatus.textContent = t(camStatusKey);
+    }
+  }
+
+  // Giữ focus ở ô nhập phóng to khi bấm nút ngôn ngữ / giao diện, để ô không bị tự đóng
+  for(const btn of [langBtn, themeBtn]){
+    btn.addEventListener('pointerdown', (e)=> e.preventDefault());
+    btn.addEventListener('mousedown', (e)=> e.preventDefault());
+  }
+  langBtn.addEventListener('click', ()=>{
+    applyLanguage(currentLang === 'vi' ? 'en' : 'vi');
+    // Nếu đang mở ô nhập phóng to: đổi luôn placeholder và (với ô Công đoạn) chữ gợi ý sang ngôn ngữ mới
+    if(activeField){
+      if(activePhKey) bigEdit.placeholder = t(activePhKey);
+      if(activeField === fieldStage) setBigEditValue(translateStage(bigEdit.value));
+      bigEdit.focus();
+    }
+  });
+
+  // 4 trường ghi chú in lên ảnh, mỗi trường 1 màu riêng, dạng "Nhãn : giá trị"
+  const fieldItem = document.getElementById('fieldItem');
+  const fieldProject = document.getElementById('fieldProject');
+  const fieldTeam = document.getElementById('fieldTeam');
+  const fieldStage = document.getElementById('fieldStage');
+  const fieldProgress = document.getElementById('fieldProgress');
+  const progressSummary = document.getElementById('progressSummary');
+  const progressValueDisplay = document.getElementById('progressValueDisplay');
+  const bigEdit = document.getElementById('bigEdit');
+  const bigEditWrap = document.getElementById('bigEditWrap');
+  const bigEditOk = document.getElementById('bigEditOk');
+  const bigEditCancel = document.getElementById('bigEditCancel');
+  const bigEditOkLabel = document.getElementById('bigEditOkLabel');
+  const bigEditCancelLabel = document.getElementById('bigEditCancelLabel');
+  const bigEditSuggest = document.getElementById('bigEditSuggest');
+  const bigEditHint = document.getElementById('bigEditHint');
+
+  // Cây gợi ý cho ô Công đoạn. Mỗi mục: tên [tiếng Anh, tiếng Việt] + các công đoạn con cùng dạng.
+  // Giao diện tiếng Anh hiện chữ tiếng Anh, giao diện tiếng Việt hiện chữ trong ngoặc (tiếng Việt).
+  const stageTree = [
+    { n:['GRC','Xi măng'], kids:[
+      ['Carving Coat','Đắp lớp phủ'], ['Mesh Assembly','Bắn Lưới'],
+      ['Scratch Coat','Đắp vữa'], ['Touch up','Dặm lại'], ['Sanding','Mài'] ] },
+    { n:['FRP','Nhựa'], kids:[
+      ['Master','Mẫu'], ['Silicone Moulding','Khuôn silicon'], ['Moulding','Khuôn nhựa'],
+      ['Casting','Đổ nhựa'], ['Assembly','Lắp ráp'],
+      ['Grinding','Mài'], ['Touch up','Dặm'] ] },
+    { n:['Steel','Thép'], kids:[
+      ['Cutting','Cắt'], ['Tack Welding','Hàn Đính'], ['Welding','Hàn chết'],
+      ['Cleaning','Vệ sinh'], ['Install','Lắp đặt'], ['Assembly','Lắp ráp'] ] },
+    { n:['Joinery','Mộc'], kids:[
+      ['Cutting','Xẻ gỗ'], ['Assembly','Lắp ráp'], ['Grinding','Mài'],
+      ['Apply Laminate','Dán Laminate'] ] },
+    { n:['CNC','CNC'], kids:[
+      ['Cutting','Phay'], ['Programming','Làm trình'] ] },
+    { n:['Painting','Sơn'], kids:[
+      ['Primer','Sơn lót'], ['Top coat','Sơn hoàn thiện'] ] },
+    { n:['Primer','Sơn lót'], kids:[
+      ['Package','Khung hàng'], ['Item','Sản Phẩm'] ] },
+    { n:['Packing','Đóng gói'], kids:[
+      ['Install','Lắp đặt'], ['Wrapping','Bọc hàng'], ['Load into the frame','Đóng hàng vào khung'],
+      ['Loading container','Đóng khung vào container'] ] }
+  ];
+  const STAGE_SEP = ' - ';
+  const STAGE_SPLIT = /\s+-\s*/; // tách "GRC - Mesh" hoặc "GRC -" (đang gõ dở) thành các phần
+  const stageText = (pair)=> currentLang === 'vi' ? pair[1] : pair[0];
+  const sameText = (pair, v)=> v === pair[0].toLowerCase() || v === pair[1].toLowerCase();
+  function findStageNode(v){ return stageTree.find(node => sameText(node.n, v.toLowerCase())) || null; }
+
+  // Chữ in lên ảnh luôn là tiếng Anh, dạng "GRC - Mesh Assembly". Phần nào khớp gợi ý (dù đang
+  // hiện tiếng Việt hay Anh) thì đổi về tiếng Anh; chữ người dùng tự gõ thì giữ nguyên.
+  function stageForPhoto(value){
+    const parts = value.split(STAGE_SPLIT).map(x => x.trim());
+    if(parts.length > 1 && parts[parts.length - 1] === '') parts.pop(); // bỏ " - " thừa ở cuối nếu chưa chọn mục con
+    const node = findStageNode(parts[0]);
+    if(!node) return value;
+    parts[0] = node.n[0];
+    if(parts.length > 1){
+      const kid = node.kids.find(k => sameText(k, parts[1].toLowerCase()));
+      if(kid) parts[1] = kid[0];
+    }
+    return parts.join(STAGE_SEP);
+  }
+
+  // Đổi một giá trị công đoạn (nếu khớp gợi ý) sang ngôn ngữ giao diện hiện tại; chữ tự gõ giữ nguyên.
+  function translateStage(value){
+    const parts = value.split(STAGE_SPLIT).map(x => x.trim());
+    const node = findStageNode(parts[0]);
+    if(!node) return value;
+    parts[0] = stageText(node.n);
+    if(parts.length > 1){
+      const kid = node.kids.find(k => sameText(k, parts[1].toLowerCase()));
+      if(kid) parts[1] = stageText(kid);
+    }
+    return parts.join(STAGE_SEP);
+  }
+
+  // stageView: -1 = đang xem danh sách công đoạn chính; >=0 = đang xem các mục con của stageTree[stageView]
+  let stageView = -1;
+  function setBigEditValue(text){
+    bigEdit.value = text;
+    bigEdit.dispatchEvent(new Event('input')); // cập nhật ô nhỏ, lưu và làm mới chữ in trên ảnh
+  }
+  function addChip(label, onClick, extraClass){
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'suggestChip' + (extraClass ? ' ' + extraClass : '');
+    chip.textContent = label;
+    chip.addEventListener('pointerdown', (e)=> e.preventDefault()); // giữ focus để bàn phím không nhấp nháy
+    chip.addEventListener('click', onClick);
+    bigEditSuggest.appendChild(chip);
+  }
+  // Gợi ý cho ô Tên dự án (giống nhau ở mọi ngôn ngữ)
+  const projectSuggestions = ['SEV656', 'SEV657', 'SEV656,657', 'SEV655', 'SEV658', 'SEV659', 'SEV660'];
+
+  // suggestMode: 'stage' | 'project' | null — ô nhập phóng to đang gợi ý cho ô nào
+  let suggestMode = null;
+  function renderStageSuggestions(){
+    bigEditSuggest.textContent = '';
+    if(suggestMode === 'project'){
+      for(const text of projectSuggestions){
+        addChip(text, ()=> setBigEditValue(text)); // điền vào ô, không đóng ô nhập
+      }
+      return;
+    }
+    if(suggestMode !== 'stage') return;
+    if(stageView < 0){
+      stageTree.forEach((node, i)=>{
+        addChip(stageText(node.n), ()=>{
+          setBigEditValue(stageText(node.n) + STAGE_SEP); // điền "GRC - " sẵn để chọn/gõ tiếp mục con
+          stageView = i;
+          renderStageSuggestions();            // rồi hiện các mục con để chọn tiếp
+        });
+      });
+    } else {
+      const node = stageTree[stageView];
+      const parentText = stageText(node.n);
+      addChip('‹ ' + parentText, ()=>{ stageView = -1; renderStageSuggestions(); }, 'back');
+      for(const kid of node.kids){
+        addChip(stageText(kid), ()=>{
+          setBigEditValue(parentText + STAGE_SEP + stageText(kid)); // điền vào ô, KHÔNG đóng ô nhập
+        });
+      }
+    }
+  }
+  // Mở ô Công đoạn: nếu đang có giá trị thuộc một công đoạn chính thì hiện luôn các mục con của nó
+  function syncStageViewWithValue(value){
+    const node = findStageNode(value.split(STAGE_SPLIT)[0].trim());
+    stageView = node ? stageTree.indexOf(node) : -1;
+    renderStageSuggestions();
+  }
+  const bigProgressWrap = document.getElementById('bigProgressWrap');
+  const bigProgressInput = document.getElementById('bigProgressInput');
+  const bigProgressSlider = document.getElementById('bigProgressSlider');
+  const bigProgressOk = document.getElementById('bigProgressOk');
+  const bigProgressCancel = document.getElementById('bigProgressCancel');
+  const bigProgressLabel = document.getElementById('bigProgressLabel');
+  const bigProgressOkLabel = document.getElementById('bigProgressOkLabel');
+  const bigProgressCancelLabel = document.getElementById('bigProgressCancelLabel');
+
+  // ---------- Ô nhập phóng to đè lên camera, gõ trực tiếp vào đây ----------
+  // Bàn phím trên điện thoại thường che mất panel nhập liệu phía dưới,
+  // nên các ô nhỏ chỉ dùng để hiển thị + mở ô to; gõ chữ thật diễn ra trên #bigEdit.
+  let activeField = null;
+  let bigEditOriginalValue = '';
+  let activePhKey = null;
+
+  function bindBigEdit(field, colorClass, phKey){
+    field.setAttribute('readonly', 'readonly'); // chặn bàn phím bật lên ở ô nhỏ
+    field.addEventListener('click', ()=>{
+      activeField = field;
+      bigEditOriginalValue = field.value;
+      bigEdit.className = colorClass; // gán màu khớp với ô đang chỉnh
+      activePhKey = phKey;
+      bigEdit.placeholder = t(phKey);
+      bigEdit.value = field.value;
+      // Chỉ ô Công đoạn và ô Tên dự án có gợi ý
+      suggestMode = field === fieldStage ? 'stage' : (field === fieldProject ? 'project' : null);
+      bigEditSuggest.classList.toggle('show', suggestMode !== null);
+      bigEditHint.classList.toggle('show', suggestMode !== null); // dòng nhắc chỉ hiện cùng hàng gợi ý
+      if(suggestMode === 'stage') syncStageViewWithValue(field.value);
+      else renderStageSuggestions();
+      bigEditWrap.classList.add('show');
+      bigEdit.focus();
+      autoGrowBigEdit();
+    });
+  }
+  bindBigEdit(fieldItem, 'field-item', 'phItem');
+  bindBigEdit(fieldProject, 'field-project', 'phProject');
+  bindBigEdit(fieldTeam, 'field-team', 'phTeam');
+  bindBigEdit(fieldStage, 'field-stage', 'phStage');
+
+  // ---------- Progress: bấm vào ô sẽ nhảy ra khối phóng to đè lên camera, ----------
+  // có ô nhập số lớn + thanh kéo trượt, giống kiểu các ô Item/Project/Team/Stage.
+  function setProgressPct(val){
+    let n = Math.round(Number(val));
+    if(isNaN(n)) n = 0;
+    n = Math.max(0, Math.min(100, n));
+    fieldProgress.value = n;
+    progressValueDisplay.textContent = n + '%';
+    document.getElementById('progressBox').classList.toggle('needs', n === 0); // 0% = chưa chọn -> hiện dấu *
+    invalidateOverlayCache();
+    saveFieldsToStorage();
+    return n;
+  }
+
+  // ---------- Lưu nội dung các ô nhập vào bộ nhớ trình duyệt, tự điền lại lần mở sau ----------
+  const FIELDS_KEY = 'ppv_fields_v1';
+  function saveFieldsToStorage(){
+    try{
+      localStorage.setItem(FIELDS_KEY, JSON.stringify({
+        item: fieldItem.value,
+        project: fieldProject.value,
+        team: fieldTeam.value,
+        stage: fieldStage.value,
+        progress: fieldProgress.value
+      }));
+    }catch(e){}
+  }
+  function loadFieldsFromStorage(){
+    try{
+      const raw = localStorage.getItem(FIELDS_KEY);
+      if(!raw) return;
+      const data = JSON.parse(raw);
+      if(typeof data.item === 'string') fieldItem.value = data.item;
+      if(typeof data.project === 'string') fieldProject.value = data.project;
+      if(typeof data.team === 'string') fieldTeam.value = data.team;
+      if(typeof data.stage === 'string') fieldStage.value = data.stage;
+      if(data.progress !== undefined) setProgressPct(data.progress);
+    }catch(e){}
+  }
+
+  function syncBigProgress(val){
+    const n = (()=>{
+      let x = Math.round(Number(val));
+      if(isNaN(x)) x = 0;
+      return Math.max(0, Math.min(100, x));
+    })();
+    bigProgressInput.value = n;
+    bigProgressSlider.value = n;
+    bigProgressSlider.style.setProperty('--big-progress-pct', n + '%');
+    return n;
+  }
+
+  let bigProgressOriginalValue = '0';
+
+  function openBigProgress(){
+    bigProgressOriginalValue = fieldProgress.value || '0';
+    syncBigProgress(fieldProgress.value || 0);
+    bigProgressWrap.classList.add('show');
+    bigProgressInput.focus();
+  }
+  function closeBigProgress(){
+    bigProgressWrap.classList.remove('show');
+    bigProgressInput.blur();
+  }
+
+  progressSummary.addEventListener('click', openBigProgress);
+
+  // Gõ số hoặc kéo thanh trượt sẽ áp dụng ngay lập tức (giống các ô Item/Project...)
+  bigProgressInput.addEventListener('input', ()=>{
+    const n = syncBigProgress(bigProgressInput.value);
+    setProgressPct(n);
+  });
+  bigProgressSlider.addEventListener('input', ()=>{
+    const n = syncBigProgress(bigProgressSlider.value);
+    setProgressPct(n);
+  });
+
+  // Giữ focus ô nhập khi chạm vào 2 nút, để xử lý xong rồi mới tắt bàn phím
+  bigProgressOk.addEventListener('pointerdown', (e)=> e.preventDefault());
+  bigProgressCancel.addEventListener('pointerdown', (e)=> e.preventDefault());
+
+  bigProgressOk.addEventListener('click', ()=>{
+    closeBigProgress(); // đồng ý: giá trị đã được áp dụng ngay khi chỉnh
+  });
+  bigProgressCancel.addEventListener('click', ()=>{
+    setProgressPct(bigProgressOriginalValue); // huỷ: khôi phục giá trị cũ
+    closeBigProgress();
+  });
+  bigProgressInput.addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter'){ e.preventDefault(); closeBigProgress(); }
+  });
+  // Lưu ý: KHÔNG đóng khi ô nhập mất focus (vd. chạm vào thanh trượt) — nếu không
+  // thanh trượt sẽ tự tắt giữa chừng khi vừa kéo xong. Chỉ đóng khi bấm Đồng ý/Huỷ
+  // hoặc nhấn Enter trên bàn phím (2 chỗ phía trên).
+
+  // Tự giãn chiều cao ô nhập theo số dòng
+  function autoGrowBigEdit(){
+    bigEdit.style.height = 'auto';
+    const maxH = window.innerHeight * 0.4;
+    bigEdit.style.height = Math.min(bigEdit.scrollHeight, maxH) + 'px';
+    bigEdit.style.overflowY = bigEdit.scrollHeight > maxH ? 'auto' : 'hidden';
+  }
+  bigEdit.addEventListener('input', ()=>{
+    // textarea có thể dính ký tự xuống dòng khi dán -> đổi thành khoảng trắng
+    if(/[\r\n]/.test(bigEdit.value)) bigEdit.value = bigEdit.value.replace(/\s*[\r\n]+\s*/g, ' ');
+    if(activeField) activeField.value = bigEdit.value;
+    saveFieldsToStorage();
+    autoGrowBigEdit();
+  });
+
+  function closeBigEdit(){
+    bigEditWrap.classList.remove('show');
+    bigEdit.blur();
+    activeField = null;
+  }
+
+  bigEdit.addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter'){ e.preventDefault(); closeBigEdit(); }
+  });
+  // Nếu người dùng chạm ra ngoài (không qua 2 nút) thì tự đóng, vẫn giữ nội dung đã gõ
+  bigEdit.addEventListener('blur', ()=>{
+    bigEditWrap.classList.remove('show');
+  });
+
+  // Giữ focus cho ô nhập khi chạm vào 2 nút, để xử lý xong rồi mới tắt bàn phím
+  bigEditOk.addEventListener('pointerdown', (e)=> e.preventDefault());
+  bigEditCancel.addEventListener('pointerdown', (e)=> e.preventDefault());
+
+  bigEditOk.addEventListener('click', ()=>{
+    if(activeField) activeField.value = bigEdit.value; // đồng ý: lưu nội dung vừa gõ
+    saveFieldsToStorage();
+    closeBigEdit();
+  });
+  bigEditCancel.addEventListener('click', ()=>{
+    if(activeField) activeField.value = bigEditOriginalValue; // huỷ: khôi phục giá trị cũ
+    bigEdit.value = bigEditOriginalValue;
+    saveFieldsToStorage();
+    closeBigEdit();
+  });
+
+
+  // Thời gian luôn tự động lấy theo đồng hồ máy, không cho nhập tay
+  function getCurrentTimeString(){
+    const d = new Date();
+    const pad = n => String(n).padStart(2,'0');
+    return `${pad(d.getHours())}:${pad(d.getMinutes())}-${pad(d.getDate())}/${pad(d.getMonth()+1)}`;
+  }
+
+  // ---------- Dark / Light mode ----------
+  function getInitialTheme(){
+    try{
+      const saved = localStorage.getItem('cam_theme');
+      if(saved === 'light' || saved === 'dark') return saved;
+    }catch(e){}
+    try{
+      if(window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) return 'light';
+    }catch(e){}
+    return 'dark';
+  }
+  function applyTheme(theme){
+    root.setAttribute('data-theme', theme);
+    themeBtn.textContent = theme === 'dark' ? '🌙' : '☀️';
+    try{ localStorage.setItem('cam_theme', theme); }catch(e){}
+  }
+  applyTheme(getInitialTheme());
+  themeBtn.addEventListener('click', ()=>{
+    const cur = root.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+    applyTheme(cur === 'dark' ? 'light' : 'dark');
+  });
+
+  let stream = null;
+  let rafId = null;
+  let vw = 0, vh = 0;
+  let videoDevices = [];
+  let currentDeviceIndex = -1;
+  // Overlay chữ giờ được vẽ 1 lần rồi cache (xem overlayCanvas bên dưới) nên không còn
+  // tốn phí mỗi khung hình -> có thể nâng trần dpr lên 3 để chữ/ảnh nét trên iPhone Pro (dpr=3)
+  // mà vẫn mượt, thay vì ép cứng dpr=2 khiến ảnh bị phóng to mờ trên các máy dpr cao.
+  const dpr = Math.min(window.devicePixelRatio || 1, 3);
+
+  function showToast(msg, ms){
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(()=> toastEl.classList.remove('show'), ms || 1800);
+  }
+
+  // Tính vùng crop từ nguồn (video) để lấp đầy khung đích mà KHÔNG méo hình
+  function computeCoverCrop(srcW, srcH, dstW, dstH){
+    const srcRatio = srcW / srcH;
+    const dstRatio = dstW / dstH;
+    let sx, sy, sw, sh;
+    if(srcRatio > dstRatio){
+      sh = srcH;
+      sw = srcH * dstRatio;
+      sx = (srcW - sw) / 2;
+      sy = 0;
+    } else {
+      sw = srcW;
+      sh = srcW / dstRatio;
+      sx = 0;
+      sy = (srcH - sh) / 2;
+    }
+    return { sx, sy, sw, sh };
+  }
+
+  async function refreshDeviceList(){
+    try{
+      const all = await navigator.mediaDevices.enumerateDevices();
+      videoDevices = all.filter(d => d.kind === 'videoinput');
+    }catch(e){ videoDevices = []; }
+  }
+
+  function pickMainRearDeviceId(){
+    if(!videoDevices.length) return null;
+    const backs = videoDevices.filter(d => /back|rear|environment|sau/i.test(d.label));
+    const mainBack = backs.find(d => !/ultra|wide|tele|depth|macro/i.test(d.label));
+    if(mainBack) return mainBack.deviceId;
+    if(backs.length) return backs[0].deviceId;
+    return null;
+  }
+
+  async function openStream(constraintsVideo){
+    if(stream){
+      stream.getTracks().forEach(t => t.stop());
+      stream = null;
+    }
+    stream = await navigator.mediaDevices.getUserMedia({ video: constraintsVideo, audio: false });
+    video.srcObject = stream;
+    await video.play();
+    vw = video.videoWidth || 1280;
+    vh = video.videoHeight || 720;
+
+    const track = stream.getVideoTracks()[0];
+    const settings = track.getSettings ? track.getSettings() : {};
+    if(settings.deviceId){
+      const idx = videoDevices.findIndex(d => d.deviceId === settings.deviceId);
+      if(idx >= 0) currentDeviceIndex = idx;
+    }
+  }
+
+  async function startCamera(deviceId){
+    camStatusKey = 'camLoading';
+    camStatus.style.display = 'block';
+    camStatus.textContent = t('camLoading');
+    try{
+      const idealVideo = { width:{ideal:1920}, height:{ideal:1080} };
+
+      if(deviceId){
+        await openStream({ deviceId: { exact: deviceId }, ...idealVideo });
+      } else {
+        await openStream({ facingMode: { ideal: 'environment' }, ...idealVideo });
+        await refreshDeviceList();
+        const mainId = pickMainRearDeviceId();
+        if(mainId){
+          try{ await openStream({ deviceId: { exact: mainId }, ...idealVideo }); }
+          catch(e){ /* giữ nguyên stream hiện tại nếu không mở lại được */ }
+        }
+      }
+
+      if(!videoDevices.length) await refreshDeviceList();
+      camStatus.style.display = 'none';
+      resizeCanvas();
+      if(!rafId) loop();
+    }catch(err){
+      try{
+        await openStream(true);
+        await refreshDeviceList();
+        camStatus.style.display = 'none';
+        resizeCanvas();
+        if(!rafId) loop();
+      }catch(err2){
+        camStatusKey = 'camError';
+        camStatus.textContent = t('camError');
+        console.error(err, err2);
+      }
+    }
+  }
+
+  function switchCamera(){
+    if(videoDevices.length < 2){
+      showToast(t('toastOneCam'));
+      return;
+    }
+    currentDeviceIndex = (currentDeviceIndex + 1) % videoDevices.length;
+    const dev = videoDevices[currentDeviceIndex];
+    startCamera(dev.deviceId).then(()=>{
+      showToast(dev.label || t('toastCamReloaded'));
+    });
+  }
+
+  function resizeCanvas(){
+    const wrap = document.getElementById('camWrap');
+    const rect = wrap.getBoundingClientRect();
+    if(rect.width < 2 || rect.height < 2) return;
+
+    // QUAN TRỌNG: luôn đồng bộ kích thước HIỂN THỊ (CSS) theo khung camWrap mới nhất,
+    // dù độ phân giải canvas có cần đổi hay không. Trước đây 2 dòng này nằm SAU điều
+    // kiện return bên dưới, nên khi xoay máy mà targetW/targetH (đã làm tròn theo dpr)
+    // trùng số với lần trước, hàm return sớm và style.width/height không được cập nhật
+    // -> canvas giữ nguyên kích thước CSS của hướng cũ, lộ nền đen của #camWrap ra
+    // thành viền đen bên phải/dưới. Set ở đây để không bao giờ bị lệch.
+    stage.style.width = rect.width + 'px';
+    stage.style.height = rect.height + 'px';
+
+    const targetW = Math.max(1, Math.round(rect.width * dpr));
+    const targetH = Math.max(1, Math.round(rect.height * dpr));
+    // Chỉ bỏ qua việc set thuộc tính width/height (vì set 2 thuộc tính này sẽ xoá
+    // sạch nội dung canvas, khá tốn kém) khi độ phân giải thực sự không đổi.
+    if(stage.width === targetW && stage.height === targetH) return;
+    stage.width = targetW;
+    stage.height = targetH;
+    invalidateOverlayCache(); // đổi kích thước -> chữ/logo phải vẽ lại theo tỉ lệ mới
+    renderFrame(); // vẽ ngay 1 khung hình sau khi resize để không bị chớp đen chờ frame kế tiếp
+  }
+  window.addEventListener('resize', resizeCanvas);
+  window.addEventListener('orientationchange', ()=>{
+    resizeCanvas();
+    [50, 150, 300, 500, 800].forEach(ms => setTimeout(resizeCanvas, ms));
+  });
+
+  if('ResizeObserver' in window){
+    const ro = new ResizeObserver(()=> resizeCanvas());
+    ro.observe(document.getElementById('camArea'));
+    ro.observe(document.getElementById('camWrap'));
+  }
+  document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) resizeCanvas(); });
+  window.addEventListener('pageshow', resizeCanvas);
+
+  // ---------- Cache overlay (chữ + logo) ----------
+  // Vẽ chữ có viền + đổ bóng (shadowBlur) mỗi khung hình rất tốn, mà nội dung chữ chỉ đổi
+  // khi người dùng gõ hoặc mỗi khi đồng hồ nhảy giây -> vẽ 1 lần ra canvas riêng (trong suốt),
+  // rồi mỗi khung hình camera chỉ cần drawImage canvas này lên trên (rất rẻ, mượt hơn hẳn).
+  const overlayCanvas = document.createElement('canvas');
+  const overlayCtx = overlayCanvas.getContext('2d');
+  let overlayDirty = true;
+  let overlayLastKey = '';
+
+  function invalidateOverlayCache(){ overlayDirty = true; }
+
+  function rebuildOverlayCacheIfNeeded(w, h){
+    const key = `${w}x${h}|${fieldItem.value}|${fieldProject.value}|${fieldTeam.value}|${fieldStage.value}|${fieldProgress.value}|${getCurrentTimeString()}|${logoLoaded}`;
+    if(!overlayDirty && key === overlayLastKey) return;
+    overlayDirty = false;
+    overlayLastKey = key;
+
+    if(overlayCanvas.width !== w) overlayCanvas.width = w;
+    if(overlayCanvas.height !== h) overlayCanvas.height = h;
+    overlayCtx.clearRect(0, 0, w, h);
+    drawOverlayText(overlayCtx, w, h);
+    drawLogo(overlayCtx, w, h);
+  }
+
+  // Đồng hồ nhảy giây -> cần vẽ lại overlay dù không có gì khác thay đổi
+  setInterval(invalidateOverlayCache, 1000);
+  // Gõ chữ trong ô to hoặc bấm Đồng ý/Huỷ đều phải làm mới overlay ngay
+  bigEdit.addEventListener('input', invalidateOverlayCache);
+  bigEditOk.addEventListener('click', invalidateOverlayCache);
+  bigEditCancel.addEventListener('click', invalidateOverlayCache);
+
+  // ---------- Vẽ 4 dòng ghi chú "Nhãn : giá trị" ở góc dưới ảnh, tự xuống dòng khi dài ----------
+  function drawOverlayText(context, w, h){
+    const item = fieldItem.value.trim();
+    const project = fieldProject.value.trim();
+    const team = fieldTeam.value.trim();
+    const stage = stageForPhoto(fieldStage.value.trim());
+    const progress = fieldProgress.value.trim() ? `${fieldProgress.value.trim()}%` : '';
+    const time = getCurrentTimeString();
+
+    const fontSize = Math.max(9, Math.round(w * 0.026));
+    const lineHeight = fontSize * 1.3;
+    context.textBaseline = 'alphabetic';
+    context.font = `800 ${fontSize}px Arial, sans-serif`;
+
+    const leftX = w * 0.035;
+    const rightEdgeX = w * 0.965;
+    const colDivider = w * 0.46;
+    const colGap = w * 0.02;
+    const maxWidthLeft = Math.max(fontSize * 3, colDivider - leftX - colGap);
+    const maxWidthRight = Math.max(fontSize * 3, rightEdgeX - colDivider - colGap);
+    const VALUE_COLOR = '#ffffff'; // chữ sau dấu ":" luôn màu trắng
+
+    // Bẻ 1 chuỗi thành nhiều dòng; dòng đầu dùng maxWidth hẹp hơn (đã trừ phần nhãn "Label : "),
+    // các dòng sau (nếu value quá dài phải xuống dòng) dùng maxWidth đầy đủ.
+    function wrapVarying(text, firstMax, restMax){
+      const lines = [];
+      let currentMax = firstMax;
+      function hardBreak(str){
+        let chunk = '';
+        for(const ch of str){
+          const test = chunk + ch;
+          if(chunk && context.measureText(test).width > currentMax){
+            lines.push(chunk);
+            chunk = ch;
+            currentMax = restMax;
+          } else {
+            chunk = test;
+          }
+        }
+        return chunk;
+      }
+      const words = text.split(' ');
+      let line = '';
+      for(const word of words){
+        if(context.measureText(word).width > currentMax){
+          if(line){ lines.push(line); line = ''; currentMax = restMax; }
+          line = hardBreak(word);
+          continue;
+        }
+        const test = line ? line + ' ' + word : word;
+        if(context.measureText(test).width > currentMax){
+          lines.push(line);
+          line = word;
+          currentMax = restMax;
+        } else {
+          line = test;
+        }
+      }
+      if(line) lines.push(line);
+      return lines;
+    }
+
+    // Trả về mảng các "dòng", mỗi dòng là mảng các đoạn {text, color}.
+    // Dòng đầu tiên = [nhãn màu riêng] + [phần đầu giá trị, màu trắng].
+    // Các dòng xuống hàng tiếp theo (nếu có) = chỉ phần giá trị còn lại, màu trắng.
+    function buildFieldLines(label, value, maxWidth, labelColor){
+      if(!value) return [];
+      const labelText = label + ' : ';
+      const labelWidth = context.measureText(labelText).width;
+      const firstMax = Math.max(fontSize * 2, maxWidth - labelWidth);
+      const valueLines = wrapVarying(value, firstMax, maxWidth);
+      return valueLines.map((lineText, idx) => {
+        if(idx === 0) return [{ text:labelText, color:labelColor }, { text:lineText, color:VALUE_COLOR }];
+        return [{ text:lineText, color:VALUE_COLOR }];
+      });
+    }
+
+    // Vẽ 1 dòng gồm nhiều đoạn màu khác nhau, không viền đen, chỉ đổ bóng nhẹ cho dễ đọc.
+    function drawParts(parts, xRef, y, align){
+      context.textAlign = 'left';
+      let totalWidth = 0;
+      for(const p of parts) totalWidth += context.measureText(p.text).width;
+      let cx = align === 'right' ? xRef - totalWidth : xRef;
+
+      context.shadowColor = 'rgba(0,0,0,.55)';
+      context.shadowBlur = fontSize * 0.2;
+      context.shadowOffsetX = 0;
+      context.shadowOffsetY = fontSize * 0.05;
+      for(const p of parts){
+        context.fillStyle = p.color;
+        context.fillText(p.text, cx, y);
+        cx += context.measureText(p.text).width;
+      }
+      context.shadowColor = 'transparent';
+      context.shadowBlur = 0;
+    }
+
+    const baseFont = context.font;
+    function drawColumn(x, groups, align){
+      let y = startY;
+      for(const group of groups){
+        for(const lineParts of group.lines){
+          let scaled = false;
+          if(lineParts.fitWidth){
+            let wLine = 0;
+            for(const p of lineParts) wLine += context.measureText(p.text).width;
+            if(wLine > lineParts.fitWidth){
+              const s = Math.max(0.45, lineParts.fitWidth / wLine);
+              context.font = `800 ${fontSize * s}px Arial, sans-serif`;
+              scaled = true;
+            }
+          }
+          drawParts(lineParts, x, y, align);
+          if(scaled) context.font = baseFont;
+          y += lineHeight;
+        }
+      }
+    }
+
+    const itemLines = buildFieldLines('Item', item, maxWidthLeft, '#ff4d4d');
+    const teamLines = buildFieldLines('Team', team, maxWidthRight, '#ffd84d');
+    // Stage luôn nằm trên 1 dòng duy nhất (không xuống dòng); nếu dài quá thì thu nhỏ chữ cho vừa
+    const stageLines = stage
+      ? [[{ text:'Stage : ', color:'#ff9d3c' }, { text:stage, color:VALUE_COLOR }]]
+      : [];
+    const progressLines = buildFieldLines('Progress', progress, maxWidthLeft, '#6ec6ff');
+    const projectLines = buildFieldLines('Project', project, maxWidthRight, '#ff9d3c');
+    const timeLines = buildFieldLines('Time', time, maxWidthRight, '#6ec6ff');
+
+    const leftLineCount = itemLines.length + stageLines.length + progressLines.length;
+    const rightLineCount = teamLines.length + projectLines.length + timeLines.length;
+    const maxLineCount = Math.max(leftLineCount, rightLineCount, 1);
+
+    const bottomPad = fontSize * 0.9;
+    const startY = h - bottomPad - (maxLineCount - 1) * lineHeight;
+
+    // Cột phải: căn TRÁI các dòng (Team / Project / Time bắt đầu cùng một vị trí),
+    // cả khối vẫn dồn sát lề phải bằng cách lấy dòng dài nhất làm chuẩn.
+    const rightGroups = [
+      { lines:teamLines },
+      { lines:projectLines },
+      { lines:timeLines }
+    ];
+    let rightBlockWidth = 0;
+    for(const g of rightGroups){
+      for(const parts of g.lines){
+        let wLine = 0;
+        for(const p of parts) wLine += context.measureText(p.text).width;
+        if(wLine > rightBlockWidth) rightBlockWidth = wLine;
+      }
+    }
+    // Dòng Stage được dùng hết chỗ trống bên trái khối cột phải (chừa 1 khoảng hở nhỏ)
+    if(stageLines.length){
+      const rightBlockLeft = rightBlockWidth ? rightEdgeX - rightBlockWidth : rightEdgeX;
+      stageLines[0].fitWidth = Math.max(fontSize * 4, rightBlockLeft - colGap - leftX);
+    }
+    drawColumn(leftX, [
+      { lines:itemLines },
+      { lines:stageLines },
+      { lines:progressLines }
+    ], 'left');
+    drawColumn(rightEdgeX - rightBlockWidth, rightGroups, 'left');
+  }
+
+  // ---------- Logo công ty (ảnh PNG thật, đặt góc trên-phải) ----------
+  const logoImg = new Image();
+  logoImg.crossOrigin = 'anonymous'; // cần để canvas không bị "tainted" khi export ảnh (toDataURL)
+  let logoLoaded = false;
+  logoImg.onload = () => { logoLoaded = true; invalidateOverlayCache(); };
+  logoImg.onerror = () => { logoLoaded = false; console.warn('Không tải được logo PNG'); };
+  logoImg.src = 'https://i.ibb.co/SwW8gKJK/Pico-Play-We-Create-Fun-Colour-White.png';
+
+  function drawLogo(context, w, h){
+    if(!logoLoaded || !logoImg.naturalWidth) return;
+    const logoW = w * 0.22;                                   // chỉnh tỉ lệ kích thước logo tại đây
+    const logoH = logoW * (logoImg.naturalHeight / logoImg.naturalWidth);
+    const marginX = w * 0.03;
+    const marginY = h * 0.025;
+    context.drawImage(logoImg, w - logoW - marginX, marginY, logoW, logoH);
+  }
+
+  function renderFrame(){
+    if(video.readyState >= 2 && vw && vh && stage.width && stage.height){
+      const w = stage.width, h = stage.height;
+      const crop = computeCoverCrop(vw, vh, w, h);
+      // 1) vẽ khung hình camera (rẻ, GPU lo phần lớn)
+      ctx.drawImage(video, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, w, h);
+      // 2) chỉ vẽ lại chữ/logo khi nội dung thật sự đổi, còn lại chỉ ghép ảnh cache (rất rẻ)
+      rebuildOverlayCacheIfNeeded(w, h);
+      ctx.drawImage(overlayCanvas, 0, 0);
+    }
+  }
+
+  // Ưu tiên requestVideoFrameCallback: chỉ vẽ lại khi camera THỰC SỰ có khung hình mới,
+  // tránh vẽ thừa (ví dụ camera 30fps mà rAF chạy 60fps thì phí hết một nửa số lần vẽ).
+  // Máy/trình duyệt không hỗ trợ thì rơi về requestAnimationFrame như cũ.
+  function loop(){
+    if('requestVideoFrameCallback' in HTMLVideoElement.prototype){
+      const onFrame = () => {
+        renderFrame();
+        rafId = video.requestVideoFrameCallback(onFrame);
+      };
+      rafId = video.requestVideoFrameCallback(onFrame);
+    } else {
+      const onTick = () => {
+        renderFrame();
+        rafId = requestAnimationFrame(onTick);
+      };
+      rafId = requestAnimationFrame(onTick);
+    }
+  }
+
+  // ---------- Khung viền kiểu ảnh Polaroid, mép xé giấy ----------
+  function buildTornRectPath(context, x, y, w, h, jitter, step){
+    const pts = [];
+    function addEdge(x1,y1,x2,y2){
+      const dx = x2-x1, dy = y2-y1;
+      const len = Math.hypot(dx,dy);
+      const n = Math.max(2, Math.round(len/step));
+      const nx = -dy/len, ny = dx/len;
+      for(let i=0;i<=n;i++){
+        const t = i/n;
+        const j = (Math.random()*2-1) * jitter * (i===0||i===n?0.3:1);
+        pts.push([x1+dx*t+nx*j, y1+dy*t+ny*j]);
+      }
+    }
+    addEdge(x,y,x+w,y);
+    addEdge(x+w,y,x+w,y+h);
+    addEdge(x+w,y+h,x,y+h);
+    addEdge(x,y+h,x,y);
+    context.beginPath();
+    context.moveTo(pts[0][0], pts[0][1]);
+    for(let i=1;i<pts.length;i++) context.lineTo(pts[i][0], pts[i][1]);
+    context.closePath();
+  }
+
+  function applyPolaroidFrame(sourceCanvas){
+    const border = Math.round(sourceCanvas.width * 0.045);
+    const outW = sourceCanvas.width + border * 2;
+    const outH = sourceCanvas.height + border * 2;
+    const out = document.createElement('canvas');
+    out.width = outW; out.height = outH;
+    const octx = out.getContext('2d');
+
+    octx.save();
+    octx.shadowColor = 'rgba(0,0,0,.35)';
+    octx.shadowBlur = border * 0.5;
+    octx.shadowOffsetY = border * 0.12;
+    buildTornRectPath(octx, 0, 0, outW, outH, border * 0.16, Math.max(10, border * 0.32));
+    octx.fillStyle = '#f7f4ec';
+    octx.fill();
+    octx.restore();
+
+    octx.drawImage(sourceCanvas, border, border);
+    return out;
+  }
+
+  // ---------- Tên file: img_<số thứ tự>_<mm>_<dd>_<yy>.jpg, ví dụ img_1_10_07_26.jpg ----------
+  // Số thứ tự tăng dần theo từng ảnh trong ngày, sang ngày mới đếm lại từ 1 (lưu trong localStorage).
+  const IMG_COUNTER_KEY = 'ppv_img_counter_v1';
+  function todayKey(d){
+    const pad = n => String(n).padStart(2,'0');
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  }
+  function nextImageNumber(){
+    const today = todayKey(new Date());
+    let n = 0;
+    try{
+      const c = JSON.parse(localStorage.getItem(IMG_COUNTER_KEY) || 'null');
+      if(c && c.date === today && Number.isFinite(c.n)) n = c.n;
+    }catch(e){}
+    n += 1;
+    try{ localStorage.setItem(IMG_COUNTER_KEY, JSON.stringify({ date: today, n })); }catch(e){}
+    return n;
+  }
+  function imageFileName(no, ts){
+    const d = new Date(ts);
+    const pad = n => String(n).padStart(2,'0');
+    return `img_${no}_${pad(d.getMonth()+1)}_${pad(d.getDate())}_${pad(d.getFullYear() % 100)}.jpg`;
+  }
+
+  function triggerDownload(dataUrl, name){
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  let pendingDataUrl = null;
+  let pendingFileName = 'img.jpg';
+
+  function openPreview(dataUrl){
+    pendingDataUrl = dataUrl;
+    previewImg.src = dataUrl;
+    previewModal.classList.add('show');
+    // Tự động lưu vào thư viện ảnh của app ngay khi có ảnh đã đóng dấu chữ/logo,
+    // không cần chờ người dùng bấm "Lưu ảnh" ở bước xem trước.
+    const item = addToGallery(dataUrl);
+    pendingFileName = galleryFileName(item);
+  }
+  function closePreview(){
+    previewModal.classList.remove('show');
+    pendingDataUrl = null;
+  }
+  previewOk.addEventListener('click', ()=>{
+    if(pendingDataUrl){
+      triggerDownload(pendingDataUrl, pendingFileName);
+      showToast(t('toastSaved'));
+    }
+    closePreview();
+  });
+  previewCancel.addEventListener('click', ()=>{
+    closePreview();
+  });
+
+  // ================= THƯ VIỆN ẢNH ĐÃ CHỤP =================
+  // Lưu trong localStorage của trình duyệt (riêng cho từng người dùng trên máy đó),
+  // chỉ giữ tối đa MAX_GALLERY_ITEMS ảnh gần nhất để tránh đầy bộ nhớ trình duyệt.
+  const GALLERY_KEY = 'ppv_gallery_v1';
+  const MAX_GALLERY_ITEMS = 24;
+  let gallery = [];
+  let gallerySelected = new Set();
+
+  function loadGallery(){
+    try{
+      const raw = localStorage.getItem(GALLERY_KEY);
+      gallery = raw ? JSON.parse(raw) : [];
+    }catch(e){ gallery = []; }
+  }
+  function saveGallery(){
+    try{
+      localStorage.setItem(GALLERY_KEY, JSON.stringify(gallery));
+    }catch(e){
+      // Hết dung lượng lưu trữ -> bớt một nửa ảnh cũ rồi thử lưu lại
+      if(gallery.length > 1){
+        gallery = gallery.slice(0, Math.ceil(gallery.length / 2));
+        try{ localStorage.setItem(GALLERY_KEY, JSON.stringify(gallery)); }catch(e2){}
+      }
+    }
+  }
+  function addToGallery(dataUrl){
+    const item = { id: Date.now() + '_' + Math.random().toString(36).slice(2), dataUrl, ts: Date.now(), no: nextImageNumber() };
+    gallery.unshift(item);
+    if(gallery.length > MAX_GALLERY_ITEMS) gallery = gallery.slice(0, MAX_GALLERY_ITEMS);
+    saveGallery();
+    updateGalleryBadge();
+    return item;
+  }
+  function updateGalleryBadge(){
+    if(gallery.length > 0){
+      galleryBadge.textContent = gallery.length > 99 ? '99+' : String(gallery.length);
+      galleryBadge.hidden = false;
+    } else {
+      galleryBadge.hidden = true;
+    }
+  }
+
+  function galleryFileName(item){
+    // Ảnh cũ (lưu trước khi có số thứ tự) không có item.no -> dùng giờ phút giây làm số để không trùng tên
+    const no = item.no != null ? item.no : (() => { const d = new Date(item.ts); return d.getHours()*3600 + d.getMinutes()*60 + d.getSeconds(); })();
+    return imageFileName(no, item.ts);
+  }
+
+  function updateGalleryActionsState(){
+    const n = gallerySelected.size;
+    galleryDeleteSel.disabled = n === 0;
+    galleryDownloadSel.disabled = n === 0;
+    galleryShareSel.disabled = n === 0;
+    galleryTitle.textContent = n > 0
+      ? `${t('galleryTitle')} (${n}/${gallery.length})`
+      : `${t('galleryTitle')} (${gallery.length})`;
+    gallerySelectAll.textContent = (gallery.length > 0 && n === gallery.length)
+      ? t('galleryDeselectAll')
+      : t('gallerySelectAll');
+    gallerySelectAll.disabled = gallery.length === 0;
+  }
+
+  function renderGallery(){
+    galleryGrid.innerHTML = '';
+    if(!gallery.length){
+      const empty = document.createElement('div');
+      empty.className = 'gallery-empty';
+      empty.textContent = t('galleryEmpty');
+      galleryGrid.appendChild(empty);
+      updateGalleryActionsState();
+      return;
+    }
+    gallery.forEach(item => {
+      const thumb = document.createElement('div');
+      thumb.className = 'gallery-thumb' + (gallerySelected.has(item.id) ? ' selected' : '');
+      thumb.dataset.id = item.id;
+
+      const img = document.createElement('img');
+      img.src = item.dataUrl;
+      img.alt = '';
+      // Bấm vào ảnh -> xem phóng to (lightbox)
+      img.addEventListener('click', ()=> openLightbox(item.id));
+      thumb.appendChild(img);
+
+      const check = document.createElement('button');
+      check.className = 'thumbCheck';
+      check.textContent = '✓';
+      check.setAttribute('aria-label', 'Chọn ảnh này');
+      // Bấm vào dấu tick -> chọn/bỏ chọn, không mở ảnh lớn
+      check.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        if(gallerySelected.has(item.id)) gallerySelected.delete(item.id);
+        else gallerySelected.add(item.id);
+        thumb.classList.toggle('selected');
+        updateGalleryActionsState();
+      });
+      thumb.appendChild(check);
+
+      const del = document.createElement('button');
+      del.className = 'thumbDelete';
+      del.textContent = '✕';
+      del.setAttribute('aria-label', 'Xoá ảnh này');
+      del.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        gallery = gallery.filter(g => g.id !== item.id);
+        gallerySelected.delete(item.id);
+        saveGallery();
+        updateGalleryBadge();
+        renderGallery();
+      });
+      thumb.appendChild(del);
+
+      galleryGrid.appendChild(thumb);
+    });
+    updateGalleryActionsState();
+  }
+
+  // ---------- Chọn tất cả / Bỏ chọn tất cả ----------
+  gallerySelectAll.addEventListener('click', ()=>{
+    if(gallery.length > 0 && gallerySelected.size === gallery.length){
+      gallerySelected.clear();
+    } else {
+      gallerySelected = new Set(gallery.map(g => g.id));
+    }
+    renderGallery();
+  });
+
+  // ---------- Lightbox: xem 1 ảnh phóng to, có thể tải/chia sẻ/xoá ngay tại đây ----------
+  let lightboxItemId = null;
+  function openLightbox(id){
+    const item = gallery.find(g => g.id === id);
+    if(!item) return;
+    lightboxItemId = id;
+    lightboxImg.src = item.dataUrl;
+    lightboxModal.classList.add('show');
+  }
+  function closeLightbox(){
+    lightboxModal.classList.remove('show');
+    lightboxItemId = null;
+  }
+  lightboxClose.addEventListener('click', closeLightbox);
+  lightboxModal.addEventListener('click', (e)=>{
+    if(e.target === lightboxModal) closeLightbox();
+  });
+  lightboxDownload.addEventListener('click', ()=>{
+    const item = gallery.find(g => g.id === lightboxItemId);
+    if(item) triggerDownload(item.dataUrl, galleryFileName(item));
+  });
+  lightboxDelete.addEventListener('click', ()=>{
+    gallery = gallery.filter(g => g.id !== lightboxItemId);
+    gallerySelected.delete(lightboxItemId);
+    saveGallery();
+    updateGalleryBadge();
+    closeLightbox();
+    renderGallery();
+  });
+  lightboxShare.addEventListener('click', async ()=>{
+    const item = gallery.find(g => g.id === lightboxItemId);
+    if(!item) return;
+    try{
+      const blob = await (await fetch(item.dataUrl)).blob();
+      const file = new File([blob], galleryFileName(item), { type:'image/jpeg' });
+      if(navigator.canShare && navigator.canShare({ files:[file] })){
+        await navigator.share({ files:[file] });
+      } else {
+        triggerDownload(item.dataUrl, galleryFileName(item));
+        showToast(t('toastShareUnsupported'));
+      }
+    }catch(e){
+      if(!e || e.name !== 'AbortError') showToast(t('toastShareUnsupported'));
+    }
+  });
+
+  function openGallery(){
+    gallerySelected.clear();
+    renderGallery();
+    galleryModal.classList.add('show');
+  }
+  function closeGallery(){
+    galleryModal.classList.remove('show');
+  }
+  galleryBtn.addEventListener('click', openGallery);
+  galleryCloseX.addEventListener('click', closeGallery);
+  galleryModal.addEventListener('click', (e)=>{
+    if(e.target === galleryModal) closeGallery();
+  });
+
+  galleryDeleteSel.addEventListener('click', ()=>{
+    if(!gallerySelected.size) return;
+    gallery = gallery.filter(g => !gallerySelected.has(g.id));
+    gallerySelected.clear();
+    saveGallery();
+    updateGalleryBadge();
+    renderGallery();
+  });
+
+  galleryDownloadSel.addEventListener('click', ()=>{
+    const items = gallery.filter(g => gallerySelected.has(g.id));
+    if(!items.length) return;
+    items.forEach((item, i)=> setTimeout(()=> triggerDownload(item.dataUrl, galleryFileName(item)), i * 250));
+    showToast(t('toastSaved'));
+  });
+
+  // Chia sẻ nhiều ảnh đã chọn cùng lúc qua menu chia sẻ hệ thống (Zalo, Messenger, AirDrop, ...)
+  galleryShareSel.addEventListener('click', async ()=>{
+    const items = gallery.filter(g => gallerySelected.has(g.id));
+    if(!items.length) return;
+    try{
+      const files = await Promise.all(items.map(async (item, idx)=>{
+        const blob = await (await fetch(item.dataUrl)).blob();
+        return new File([blob], galleryFileName(item), { type:'image/jpeg' });
+      }));
+      if(navigator.canShare && navigator.canShare({ files })){
+        await navigator.share({ files });
+      } else {
+        items.forEach((item, i)=> setTimeout(()=> triggerDownload(item.dataUrl, galleryFileName(item)), i * 250));
+        showToast(t('toastShareUnsupported'));
+      }
+    }catch(e){
+      if(!e || e.name !== 'AbortError') showToast(t('toastShareUnsupported'));
+    }
+  });
+
+  loadGallery();
+  updateGalleryBadge();
+
+  // Chia sẻ ảnh qua menu chia sẻ của hệ điều hành (Zalo, Messenger, AirDrop, ...)
+  previewShare.addEventListener('click', async ()=>{
+    if(!pendingDataUrl) return;
+    try{
+      const blob = await (await fetch(pendingDataUrl)).blob();
+      const file = new File([blob], pendingFileName, { type:'image/jpeg' });
+      if(navigator.canShare && navigator.canShare({ files:[file] })){
+        await navigator.share({ files:[file] });
+      } else {
+        showToast(t('toastShareUnsupported'));
+      }
+    }catch(e){
+      // Người dùng tự đóng menu chia sẻ (AbortError) thì bỏ qua, lỗi khác mới báo
+      if(!e || e.name !== 'AbortError') showToast(t('toastShareUnsupported'));
+    }
+  });
+
+  function capture(){
+    if(!vw || !vh || !stage.width || !stage.height){ showToast(t('toastCamNotReady')); return; }
+    flashEl.classList.add('on');
+    setTimeout(()=> flashEl.classList.remove('on'), 180);
+
+    const crop = computeCoverCrop(vw, vh, stage.width, stage.height);
+    const out = document.createElement('canvas');
+    out.width = Math.round(crop.sw);
+    out.height = Math.round(crop.sh);
+    const octx = out.getContext('2d');
+    octx.drawImage(video, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, out.width, out.height);
+    drawOverlayText(octx, out.width, out.height);
+    drawLogo(octx, out.width, out.height);
+
+    const dataUrl = out.toDataURL('image/jpeg', 0.95);
+    openPreview(dataUrl);
+  }
+
+  captureBtn.addEventListener('click', capture);
+  switchBtn.addEventListener('click', switchCamera);
+
+  // ---------- Tải ảnh từ album: đóng dấu chữ + logo như ảnh chụp, rồi mở preview ----------
+  uploadBtn.addEventListener('click', ()=> uploadInput.click());
+  uploadInput.addEventListener('change', ()=>{
+    const file = uploadInput.files && uploadInput.files[0];
+    uploadInput.value = ''; // cho phép chọn lại cùng một ảnh lần sau
+    if(!file) return;
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = ()=>{
+      const MAX_SIDE = 2400; // giới hạn kích thước để không tốn bộ nhớ trên điện thoại
+      const scale = Math.min(1, MAX_SIDE / Math.max(img.naturalWidth, img.naturalHeight));
+      const out = document.createElement('canvas');
+      out.width = Math.max(1, Math.round(img.naturalWidth * scale));
+      out.height = Math.max(1, Math.round(img.naturalHeight * scale));
+      const octx = out.getContext('2d');
+      octx.drawImage(img, 0, 0, out.width, out.height);
+      URL.revokeObjectURL(url);
+      drawOverlayText(octx, out.width, out.height);
+      drawLogo(octx, out.width, out.height);
+      openPreview(out.toDataURL('image/jpeg', 0.95));
+    };
+    img.onerror = ()=>{
+      URL.revokeObjectURL(url);
+      showToast(t('toastImgError'));
+    };
+    img.src = url;
+  });
+
+  loadFieldsFromStorage();
+  applyLanguage(currentLang);
+  startCamera();
+})();
+</script>
+</body>
+</html>
     --glass-hi: rgba(255, 255, 255, .22);
 
     --btn-bg: rgba(28,28,30,.22);
