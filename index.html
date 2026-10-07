@@ -1326,6 +1326,7 @@
       ['Loading container','Đóng khung vào container'] ] }
   ];
   const STAGE_SEP = ' - ';
+  const STAGE_SPLIT = /\s+-\s*/; // tách "GRC - Mesh" hoặc "GRC -" (đang gõ dở) thành các phần
   const stageText = (pair)=> currentLang === 'vi' ? pair[1] : pair[0];
   const sameText = (pair, v)=> v === pair[0].toLowerCase() || v === pair[1].toLowerCase();
   function findStageNode(v){ return stageTree.find(node => sameText(node.n, v.toLowerCase())) || null; }
@@ -1333,7 +1334,8 @@
   // Chữ in lên ảnh luôn là tiếng Anh, dạng "GRC - Mesh Assembly". Phần nào khớp gợi ý (dù đang
   // hiện tiếng Việt hay Anh) thì đổi về tiếng Anh; chữ người dùng tự gõ thì giữ nguyên.
   function stageForPhoto(value){
-    const parts = value.split(STAGE_SEP).map(x => x.trim());
+    const parts = value.split(STAGE_SPLIT).map(x => x.trim());
+    if(parts.length > 1 && parts[parts.length - 1] === '') parts.pop(); // bỏ " - " thừa ở cuối nếu chưa chọn mục con
     const node = findStageNode(parts[0]);
     if(!node) return value;
     parts[0] = node.n[0];
@@ -1346,7 +1348,7 @@
 
   // Đổi một giá trị công đoạn (nếu khớp gợi ý) sang ngôn ngữ giao diện hiện tại; chữ tự gõ giữ nguyên.
   function translateStage(value){
-    const parts = value.split(STAGE_SEP).map(x => x.trim());
+    const parts = value.split(STAGE_SPLIT).map(x => x.trim());
     const node = findStageNode(parts[0]);
     if(!node) return value;
     parts[0] = stageText(node.n);
@@ -1389,7 +1391,7 @@
     if(stageView < 0){
       stageTree.forEach((node, i)=>{
         addChip(stageText(node.n), ()=>{
-          setBigEditValue(stageText(node.n)); // điền ngay tên chính (bấm Đồng ý nếu chỉ cần vậy)
+          setBigEditValue(stageText(node.n) + STAGE_SEP); // điền "GRC - " sẵn để chọn/gõ tiếp mục con
           stageView = i;
           renderStageSuggestions();            // rồi hiện các mục con để chọn tiếp
         });
@@ -1407,7 +1409,7 @@
   }
   // Mở ô Công đoạn: nếu đang có giá trị thuộc một công đoạn chính thì hiện luôn các mục con của nó
   function syncStageViewWithValue(value){
-    const node = findStageNode(value.split(STAGE_SEP)[0].trim());
+    const node = findStageNode(value.split(STAGE_SPLIT)[0].trim());
     stageView = node ? stageTree.indexOf(node) : -1;
     renderStageSuggestions();
   }
