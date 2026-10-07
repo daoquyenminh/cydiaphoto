@@ -866,16 +866,21 @@
     gap:10px;
     flex:0 0 auto;
   }
+  /* Nút "Chọn tất cả / Bỏ chọn": to hơn, nền cam chữ trắng */
   .gallery-linkBtn{
     border:none;
-    background:transparent;
-    color:#2f8fe0;
-    font-size:13px;
-    font-weight:700;
-    padding:4px 2px;
+    background:linear-gradient(135deg, #ffb347, #ff7a18);
+    color:#ffffff;
+    font-size:15px;
+    font-weight:800;
+    padding:9px 18px;
+    border-radius:999px;
     white-space:nowrap;
+    text-shadow:0 1px 2px rgba(0,0,0,.25);
+    box-shadow:0 6px 16px rgba(255,122,24,.4), inset 0 1px 0 rgba(255,255,255,.35);
   }
-  .gallery-linkBtn:active{ opacity:.6; }
+  .gallery-linkBtn:active{ transform:scale(.96); filter:brightness(.95); }
+  .gallery-linkBtn:disabled{ opacity:.45; box-shadow:none; }
   #galleryCloseX{
     width:30px;height:30px;
     border-radius:50%;
@@ -2074,11 +2079,32 @@
     return out;
   }
 
-  function triggerDownload(dataUrl){
-    const a = document.createElement('a');
-    const ts = new Date();
+  // ---------- Tên file: img_<số thứ tự>_<mm>_<dd>_<yy>.jpg, ví dụ img_1_10_07_26.jpg ----------
+  // Số thứ tự tăng dần theo từng ảnh trong ngày, sang ngày mới đếm lại từ 1 (lưu trong localStorage).
+  const IMG_COUNTER_KEY = 'ppv_img_counter_v1';
+  function todayKey(d){
     const pad = n => String(n).padStart(2,'0');
-    const name = `anh_${ts.getFullYear()}${pad(ts.getMonth()+1)}${pad(ts.getDate())}_${pad(ts.getHours())}${pad(ts.getMinutes())}${pad(ts.getSeconds())}.jpg`;
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  }
+  function nextImageNumber(){
+    const today = todayKey(new Date());
+    let n = 0;
+    try{
+      const c = JSON.parse(localStorage.getItem(IMG_COUNTER_KEY) || 'null');
+      if(c && c.date === today && Number.isFinite(c.n)) n = c.n;
+    }catch(e){}
+    n += 1;
+    try{ localStorage.setItem(IMG_COUNTER_KEY, JSON.stringify({ date: today, n })); }catch(e){}
+    return n;
+  }
+  function imageFileName(no, ts){
+    const d = new Date(ts);
+    const pad = n => String(n).padStart(2,'0');
+    return `img_${no}_${pad(d.getMonth()+1)}_${pad(d.getDate())}_${pad(d.getFullYear() % 100)}.jpg`;
+  }
+
+  function triggerDownload(dataUrl, name){
+    const a = document.createElement('a');
     a.href = dataUrl;
     a.download = name;
     document.body.appendChild(a);
@@ -2087,6 +2113,7 @@
   }
 
   let pendingDataUrl = null;
+  let pendingFileName = 'img.jpg';
 
   function openPreview(dataUrl){
     pendingDataUrl = dataUrl;
@@ -2094,7 +2121,8 @@
     previewModal.classList.add('show');
     // Tự động lưu vào thư viện ảnh của app ngay khi có ảnh đã đóng dấu chữ/logo,
     // không cần chờ người dùng bấm "Lưu ảnh" ở bước xem trước.
-    addToGallery(dataUrl);
+    const item = addToGallery(dataUrl);
+    pendingFileName = galleryFileName(item);
   }
   function closePreview(){
     previewModal.classList.remove('show');
@@ -2102,7 +2130,7 @@
   }
   previewOk.addEventListener('click', ()=>{
     if(pendingDataUrl){
-      triggerDownload(pendingDataUrl);
+      triggerDownload(pendingDataUrl, pendingFileName);
       showToast(t('toastSaved'));
     }
     closePreview();
@@ -2137,10 +2165,12 @@
     }
   }
   function addToGallery(dataUrl){
-    gallery.unshift({ id: Date.now() + '_' + Math.random().toString(36).slice(2), dataUrl, ts: Date.now() });
+    const item = { id: Date.now() + '_' + Math.random().toString(36).slice(2), dataUrl, ts: Date.now(), no: nextImageNumber() };
+    gallery.unshift(item);
     if(gallery.length > MAX_GALLERY_ITEMS) gallery = gallery.slice(0, MAX_GALLERY_ITEMS);
     saveGallery();
     updateGalleryBadge();
+    return item;
   }
   function updateGalleryBadge(){
     if(gallery.length > 0){
@@ -2151,10 +2181,10 @@
     }
   }
 
-  function galleryFileName(item, idx){
-    const d = new Date(item.ts);
-    const pad = n => String(n).padStart(2,'0');
-    return `anh_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}${idx!=null ? '_' + (idx+1) : ''}.jpg`;
+  function galleryFileName(item){
+    // Ảnh cũ (lưu trước khi có số thứ tự) không có item.no -> dùng giờ phút giây làm số để không trùng tên
+    const no = item.no != null ? item.no : (() => { const d = new Date(item.ts); return d.getHours()*3600 + d.getMinutes()*60 + d.getSeconds(); })();
+    return imageFileName(no, item.ts);
   }
 
   function updateGalleryActionsState(){
@@ -2255,7 +2285,7 @@
   });
   lightboxDownload.addEventListener('click', ()=>{
     const item = gallery.find(g => g.id === lightboxItemId);
-    if(item) triggerDownload(item.dataUrl);
+    if(item) triggerDownload(item.dataUrl, galleryFileName(item));
   });
   lightboxDelete.addEventListener('click', ()=>{
     gallery = gallery.filter(g => g.id !== lightboxItemId);
@@ -2274,7 +2304,7 @@
       if(navigator.canShare && navigator.canShare({ files:[file] })){
         await navigator.share({ files:[file] });
       } else {
-        triggerDownload(item.dataUrl);
+        triggerDownload(item.dataUrl, galleryFileName(item));
         showToast(t('toastShareUnsupported'));
       }
     }catch(e){
@@ -2308,7 +2338,7 @@
   galleryDownloadSel.addEventListener('click', ()=>{
     const items = gallery.filter(g => gallerySelected.has(g.id));
     if(!items.length) return;
-    items.forEach((item, i)=> setTimeout(()=> triggerDownload(item.dataUrl), i * 250));
+    items.forEach((item, i)=> setTimeout(()=> triggerDownload(item.dataUrl, galleryFileName(item)), i * 250));
     showToast(t('toastSaved'));
   });
 
@@ -2319,12 +2349,12 @@
     try{
       const files = await Promise.all(items.map(async (item, idx)=>{
         const blob = await (await fetch(item.dataUrl)).blob();
-        return new File([blob], galleryFileName(item, idx), { type:'image/jpeg' });
+        return new File([blob], galleryFileName(item), { type:'image/jpeg' });
       }));
       if(navigator.canShare && navigator.canShare({ files })){
         await navigator.share({ files });
       } else {
-        items.forEach((item, i)=> setTimeout(()=> triggerDownload(item.dataUrl), i * 250));
+        items.forEach((item, i)=> setTimeout(()=> triggerDownload(item.dataUrl, galleryFileName(item)), i * 250));
         showToast(t('toastShareUnsupported'));
       }
     }catch(e){
@@ -2340,10 +2370,7 @@
     if(!pendingDataUrl) return;
     try{
       const blob = await (await fetch(pendingDataUrl)).blob();
-      const pad = n => String(n).padStart(2,'0');
-      const ts = new Date();
-      const name = `anh_${ts.getFullYear()}${pad(ts.getMonth()+1)}${pad(ts.getDate())}_${pad(ts.getHours())}${pad(ts.getMinutes())}${pad(ts.getSeconds())}.jpg`;
-      const file = new File([blob], name, { type:'image/jpeg' });
+      const file = new File([blob], pendingFileName, { type:'image/jpeg' });
       if(navigator.canShare && navigator.canShare({ files:[file] })){
         await navigator.share({ files:[file] });
       } else {
