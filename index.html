@@ -168,6 +168,15 @@
     align-items:center;
     justify-content:center;
   }
+  /* Màn dọc: kéo dài khung camera xuống sát panel (thay vì cố định 3:4 làm thừa khoảng đen),
+     nhưng không dài quá tỉ lệ 2:3 */
+  @media (orientation: portrait){
+    #camWrap{
+      aspect-ratio:auto;
+      height:100%;
+      max-height:min(100%, calc((100vw - 28px - var(--safe-l) - var(--safe-r)) * 1.5));
+    }
+  }
   #camWrap video{display:none;}
   #stage{
     width:100%;
@@ -198,7 +207,7 @@
   /* ---------- Ô nhập phóng to đè lên camera khi đang gõ (bàn phím che phần dưới) ---------- */
   #bigEditWrap{
     position:absolute;
-    top:6%;
+    top:max(6%, 70px); /* né hai nút giao diện + ngôn ngữ ở góc trên */
     left:50%;
     width:88%;
     max-width:88%;
@@ -258,7 +267,18 @@
     appearance:none;
   }
   .suggestChip:active{ transform:scale(.95); }
-  .suggestChip.back{ background:rgba(255,255,255,.16); }
+  /* Nút quay lại danh sách công đoạn chính: to hơn, màu cam nổi bật so với các nút gợi ý xanh */
+  .suggestChip.back{
+    padding:11px 20px;
+    font-size:17px;
+    font-weight:800;
+    letter-spacing:.2px;
+    color:#fff;
+    background:linear-gradient(135deg, #ffb347, #ff7a18);
+    border:1.5px solid rgba(255,255,255,.75);
+    text-shadow:0 1px 2px rgba(0,0,0,.35);
+    box-shadow:0 8px 20px rgba(255,122,24,.45), inset 0 1px 0 rgba(255,255,255,.4);
+  }
 
   #bigEditActions{
     display:flex;
@@ -294,7 +314,7 @@
   /* ---------- Khối phóng to riêng cho Progress: số % to + thanh trượt ---------- */
   #bigProgressWrap{
     position:absolute;
-    top:6%;
+    top:max(6%, 70px); /* né hai nút giao diện + ngôn ngữ ở góc trên */
     left:50%;
     width:88%;
     max-width:88%;
