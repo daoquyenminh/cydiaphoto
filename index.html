@@ -233,6 +233,33 @@
   #bigEdit.field-project{ background:linear-gradient(135deg, var(--c-project-a), var(--c-project-b)); }
   #bigEdit.field-progress{ background:linear-gradient(135deg, var(--c-progress-a), var(--c-progress-b)); }
 
+  /* Hàng gợi ý (chỉ hiện khi đang sửa ô Công đoạn / Stage) */
+  #bigEditSuggest{
+    display:none;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:8px;
+  }
+  #bigEditSuggest.show{ display:flex; }
+  .suggestChip{
+    padding:8px 14px;
+    border:1px solid rgba(255,255,255,.28);
+    border-radius:999px;
+    background:rgba(20,110,80,.55);
+    color:#fff;
+    font-family:inherit;
+    font-size:14px;
+    font-weight:700;
+    backdrop-filter:blur(14px) saturate(180%);
+    -webkit-backdrop-filter:blur(14px) saturate(180%);
+    box-shadow:0 6px 16px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.14);
+    cursor:pointer;
+    -webkit-appearance:none;
+    appearance:none;
+  }
+  .suggestChip:active{ transform:scale(.95); }
+  .suggestChip.back{ background:rgba(255,255,255,.16); }
+
   #bigEditActions{
     display:flex;
     gap:10px;
@@ -953,6 +980,7 @@
       </div>
       <div id="bigEditWrap">
         <input id="bigEdit" type="text" autocomplete="off" maxlength="40">
+        <div id="bigEditSuggest"></div>
         <div id="bigEditActions">
           <button type="button" id="bigEditCancel" class="bigEditBtn">✕ <span id="bigEditCancelLabel">Huỷ</span></button>
           <button type="button" id="bigEditOk" class="bigEditBtn">✓ <span id="bigEditOkLabel">Đồng ý</span></button>
@@ -1111,7 +1139,7 @@
       phItem:'Hạng mục',
       phProject:'Tên dự án',
       phProgress:'Phần trăm',
-      phTeam:'Tổ',
+      phTeam:'Tên tổ trưởng',
       phStage:'Công đoạn',
       reloadCamera:'Tải lại camera',
       uploadTooltip:'Tải ảnh từ album',
@@ -1145,7 +1173,7 @@
       phItem:'Item',
       phProject:'Project',
       phProgress:'Progress',
-      phTeam:'Team',
+      phTeam:'Team leader',
       phStage:'Stage',
       reloadCamera:'Reload camera',
       uploadTooltip:'Upload from album',
@@ -1211,6 +1239,7 @@
     previewImg.alt = t('altPhoto');
     bigEditCancelLabel.textContent = t('cancelLabel');
     bigEditOkLabel.textContent = t('confirmLabel');
+    renderStageSuggestions();
     bigProgressLabel.textContent = t('phProgress');
     progressLabelEl.textContent = t('phProgress');
     bigProgressCancelLabel.textContent = t('cancelLabel');
@@ -1221,8 +1250,19 @@
     }
   }
 
+  // Giữ focus ở ô nhập phóng to khi bấm nút ngôn ngữ / giao diện, để ô không bị tự đóng
+  for(const btn of [langBtn, themeBtn]){
+    btn.addEventListener('pointerdown', (e)=> e.preventDefault());
+    btn.addEventListener('mousedown', (e)=> e.preventDefault());
+  }
   langBtn.addEventListener('click', ()=>{
     applyLanguage(currentLang === 'vi' ? 'en' : 'vi');
+    // Nếu đang mở ô nhập phóng to: đổi luôn placeholder và (với ô Công đoạn) chữ gợi ý sang ngôn ngữ mới
+    if(activeField){
+      if(activePhKey) bigEdit.placeholder = t(activePhKey);
+      if(activeField === fieldStage) setBigEditValue(translateStage(bigEdit.value));
+      bigEdit.focus();
+    }
   });
 
   // 4 trường ghi chú in lên ảnh, mỗi trường 1 màu riêng, dạng "Nhãn : giá trị"
@@ -1239,6 +1279,117 @@
   const bigEditCancel = document.getElementById('bigEditCancel');
   const bigEditOkLabel = document.getElementById('bigEditOkLabel');
   const bigEditCancelLabel = document.getElementById('bigEditCancelLabel');
+  const bigEditSuggest = document.getElementById('bigEditSuggest');
+
+  // Cây gợi ý cho ô Công đoạn. Mỗi mục: tên [tiếng Anh, tiếng Việt] + các công đoạn con cùng dạng.
+  // Giao diện tiếng Anh hiện chữ tiếng Anh, giao diện tiếng Việt hiện chữ trong ngoặc (tiếng Việt).
+  const stageTree = [
+    { n:['GRC','Xi măng'], kids:[
+      ['Carving Coat','Đắp lớp phủ'], ['Mesh Assembly','Bắn Lưới'],
+      ['Scratch Coat','Đắp vữa'], ['Touch up','Dặm lại'] ] },
+    { n:['FRP','Nhựa'], kids:[
+      ['Master','Mẫu'], ['Silicone Moulding','Khuôn silicon'], ['Moulding','Khuôn nhựa'],
+      ['Casting','Đổ nhựa'], ['Assembly','Lắp ráp'] ] },
+    { n:['Steel','Thép'], kids:[
+      ['Cutting','Cắt'], ['Tack Welding','Hàn Đính'], ['Welding','Hàn chết'],
+      ['Cleaning','Vệ sinh'], ['Install','Lắp đặt'], ['Assembly','Lắp ráp'] ] },
+    { n:['Joinery','Mộc'], kids:[
+      ['Cutting','Xẻ gỗ'], ['Assembly','Lắp ráp'], ['Grinding','Mài'],
+      ['Apply Laminate','Dán Laminate'] ] },
+    { n:['Painting','Sơn'], kids:[
+      ['Primer','Sơn lót'], ['Top coat','Sơn hoàn thiện'] ] },
+    { n:['Primer','Sơn lót'], kids:[
+      ['Package','Khung hàng'], ['Item','Sản Phẩm'] ] },
+    { n:['Packing','Đóng gói'], kids:[
+      ['Wrapping','Bọc hàng'], ['Load into the frame','Đóng hàng vào khung'],
+      ['Loading container','Đóng khung vào container'] ] }
+  ];
+  const STAGE_SEP = ' - ';
+  const stageText = (pair)=> currentLang === 'vi' ? pair[1] : pair[0];
+  const sameText = (pair, v)=> v === pair[0].toLowerCase() || v === pair[1].toLowerCase();
+  function findStageNode(v){ return stageTree.find(node => sameText(node.n, v.toLowerCase())) || null; }
+
+  // Chữ in lên ảnh luôn là tiếng Anh, dạng "GRC - Mesh Assembly". Phần nào khớp gợi ý (dù đang
+  // hiện tiếng Việt hay Anh) thì đổi về tiếng Anh; chữ người dùng tự gõ thì giữ nguyên.
+  function stageForPhoto(value){
+    const parts = value.split(STAGE_SEP).map(x => x.trim());
+    const node = findStageNode(parts[0]);
+    if(!node) return value;
+    parts[0] = node.n[0];
+    if(parts.length > 1){
+      const kid = node.kids.find(k => sameText(k, parts[1].toLowerCase()));
+      if(kid) parts[1] = kid[0];
+    }
+    return parts.join(STAGE_SEP);
+  }
+
+  // Đổi một giá trị công đoạn (nếu khớp gợi ý) sang ngôn ngữ giao diện hiện tại; chữ tự gõ giữ nguyên.
+  function translateStage(value){
+    const parts = value.split(STAGE_SEP).map(x => x.trim());
+    const node = findStageNode(parts[0]);
+    if(!node) return value;
+    parts[0] = stageText(node.n);
+    if(parts.length > 1){
+      const kid = node.kids.find(k => sameText(k, parts[1].toLowerCase()));
+      if(kid) parts[1] = stageText(kid);
+    }
+    return parts.join(STAGE_SEP);
+  }
+
+  // stageView: -1 = đang xem danh sách công đoạn chính; >=0 = đang xem các mục con của stageTree[stageView]
+  let stageView = -1;
+  function setBigEditValue(text){
+    bigEdit.value = text;
+    bigEdit.dispatchEvent(new Event('input')); // cập nhật ô nhỏ, lưu và làm mới chữ in trên ảnh
+  }
+  function addChip(label, onClick, extraClass){
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'suggestChip' + (extraClass ? ' ' + extraClass : '');
+    chip.textContent = label;
+    chip.addEventListener('pointerdown', (e)=> e.preventDefault()); // giữ focus để bàn phím không nhấp nháy
+    chip.addEventListener('click', onClick);
+    bigEditSuggest.appendChild(chip);
+  }
+  // Gợi ý cho ô Tên dự án (giống nhau ở mọi ngôn ngữ)
+  const projectSuggestions = ['SEV656', 'SEV657', 'SEV656,657', 'SEV655'];
+
+  // suggestMode: 'stage' | 'project' | null — ô nhập phóng to đang gợi ý cho ô nào
+  let suggestMode = null;
+  function renderStageSuggestions(){
+    bigEditSuggest.textContent = '';
+    if(suggestMode === 'project'){
+      for(const text of projectSuggestions){
+        addChip(text, ()=> setBigEditValue(text)); // điền vào ô, không đóng ô nhập
+      }
+      return;
+    }
+    if(suggestMode !== 'stage') return;
+    if(stageView < 0){
+      stageTree.forEach((node, i)=>{
+        addChip(stageText(node.n), ()=>{
+          setBigEditValue(stageText(node.n)); // điền ngay tên chính (bấm Đồng ý nếu chỉ cần vậy)
+          stageView = i;
+          renderStageSuggestions();            // rồi hiện các mục con để chọn tiếp
+        });
+      });
+    } else {
+      const node = stageTree[stageView];
+      const parentText = stageText(node.n);
+      addChip('‹ ' + parentText, ()=>{ stageView = -1; renderStageSuggestions(); }, 'back');
+      for(const kid of node.kids){
+        addChip(stageText(kid), ()=>{
+          setBigEditValue(parentText + STAGE_SEP + stageText(kid)); // điền vào ô, KHÔNG đóng ô nhập
+        });
+      }
+    }
+  }
+  // Mở ô Công đoạn: nếu đang có giá trị thuộc một công đoạn chính thì hiện luôn các mục con của nó
+  function syncStageViewWithValue(value){
+    const node = findStageNode(value.split(STAGE_SEP)[0].trim());
+    stageView = node ? stageTree.indexOf(node) : -1;
+    renderStageSuggestions();
+  }
   const bigProgressWrap = document.getElementById('bigProgressWrap');
   const bigProgressInput = document.getElementById('bigProgressInput');
   const bigProgressSlider = document.getElementById('bigProgressSlider');
@@ -1253,6 +1404,7 @@
   // nên các ô nhỏ chỉ dùng để hiển thị + mở ô to; gõ chữ thật diễn ra trên #bigEdit.
   let activeField = null;
   let bigEditOriginalValue = '';
+  let activePhKey = null;
 
   function bindBigEdit(field, colorClass, phKey){
     field.setAttribute('readonly', 'readonly'); // chặn bàn phím bật lên ở ô nhỏ
@@ -1260,8 +1412,14 @@
       activeField = field;
       bigEditOriginalValue = field.value;
       bigEdit.className = colorClass; // gán màu khớp với ô đang chỉnh
+      activePhKey = phKey;
       bigEdit.placeholder = t(phKey);
       bigEdit.value = field.value;
+      // Chỉ ô Công đoạn và ô Tên dự án có gợi ý
+      suggestMode = field === fieldStage ? 'stage' : (field === fieldProject ? 'project' : null);
+      bigEditSuggest.classList.toggle('show', suggestMode !== null);
+      if(suggestMode === 'stage') syncStageViewWithValue(field.value);
+      else renderStageSuggestions();
       bigEditWrap.classList.add('show');
       bigEdit.focus();
     });
@@ -1625,7 +1783,7 @@
     const item = fieldItem.value.trim();
     const project = fieldProject.value.trim();
     const team = fieldTeam.value.trim();
-    const stage = fieldStage.value.trim();
+    const stage = stageForPhoto(fieldStage.value.trim());
     const progress = fieldProgress.value.trim() ? `${fieldProgress.value.trim()}%` : '';
     const time = getCurrentTimeString();
 
