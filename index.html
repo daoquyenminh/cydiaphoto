@@ -1280,7 +1280,34 @@
     fieldProgress.value = n;
     progressValueDisplay.textContent = n + '%';
     invalidateOverlayCache();
+    saveFieldsToStorage();
     return n;
+  }
+
+  // ---------- Lưu nội dung các ô nhập vào bộ nhớ trình duyệt, tự điền lại lần mở sau ----------
+  const FIELDS_KEY = 'ppv_fields_v1';
+  function saveFieldsToStorage(){
+    try{
+      localStorage.setItem(FIELDS_KEY, JSON.stringify({
+        item: fieldItem.value,
+        project: fieldProject.value,
+        team: fieldTeam.value,
+        stage: fieldStage.value,
+        progress: fieldProgress.value
+      }));
+    }catch(e){}
+  }
+  function loadFieldsFromStorage(){
+    try{
+      const raw = localStorage.getItem(FIELDS_KEY);
+      if(!raw) return;
+      const data = JSON.parse(raw);
+      if(typeof data.item === 'string') fieldItem.value = data.item;
+      if(typeof data.project === 'string') fieldProject.value = data.project;
+      if(typeof data.team === 'string') fieldTeam.value = data.team;
+      if(typeof data.stage === 'string') fieldStage.value = data.stage;
+      if(data.progress !== undefined) setProgressPct(data.progress);
+    }catch(e){}
   }
 
   function syncBigProgress(val){
@@ -1340,6 +1367,7 @@
 
   bigEdit.addEventListener('input', ()=>{
     if(activeField) activeField.value = bigEdit.value;
+    saveFieldsToStorage();
   });
 
   function closeBigEdit(){
@@ -1362,11 +1390,13 @@
 
   bigEditOk.addEventListener('click', ()=>{
     if(activeField) activeField.value = bigEdit.value; // đồng ý: lưu nội dung vừa gõ
+    saveFieldsToStorage();
     closeBigEdit();
   });
   bigEditCancel.addEventListener('click', ()=>{
     if(activeField) activeField.value = bigEditOriginalValue; // huỷ: khôi phục giá trị cũ
     bigEdit.value = bigEditOriginalValue;
+    saveFieldsToStorage();
     closeBigEdit();
   });
 
@@ -2157,6 +2187,7 @@
     img.src = url;
   });
 
+  loadFieldsFromStorage();
   applyLanguage(currentLang);
   startCamera();
 })();
