@@ -52,7 +52,7 @@
     --slider-fill: #21c2c8;
     --slider-thumb: #ffffff;
 
-    --field-h: 44px; /* chiều cao chung cho các ô input và ô Progress */
+    --field-h: 50px; /* chiều cao chung cho các ô input và ô Progress */
     --safe-t: env(safe-area-inset-top, 0px);
     --safe-b: env(safe-area-inset-bottom, 0px);
     --safe-l: env(safe-area-inset-left, 0px);
@@ -147,10 +147,10 @@
     min-height:0;
     min-width:0;
     display:flex;
-    align-items:center;
+    align-items:flex-start;   /* camera dán lên trên, không chừa khoảng trống phía trên */
     justify-content:center;
     overflow:hidden;
-    padding:14px;
+    padding:6px 14px 14px;
   }
   #camWrap{
     position:relative;
@@ -570,7 +570,8 @@
   /* ---------- LANDSCAPE LAYOUT ---------- */
   @media (orientation: landscape){
     #app{ flex-direction:row; }
-    #camArea{ flex:1 1 auto; min-width:0; }
+    :root{ --field-h: 44px; }  /* màn ngang thấp: giữ ô nhập gọn như cũ */
+    #camArea{ flex:1 1 auto; min-width:0; align-items:center; padding:14px; }
     #panel{
       flex:0 0 auto;
       width:min(38vw, 360px);
