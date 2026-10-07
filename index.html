@@ -1016,6 +1016,7 @@
       phStage:'Công đoạn',
       reloadCamera:'Tải lại camera',
       uploadTooltip:'Tải ảnh từ album',
+      galleryTooltip:'Xem ảnh đã chụp',
       toastImgError:'Không mở được ảnh này',
       captureLabel:'Chụp ảnh',
       langCode:'VI',
@@ -1031,6 +1032,8 @@
       toastSaved:'Đã lưu ảnh về máy ✓',
       modalShare:'Chia sẻ',
       toastShareUnsupported:'Thiết bị không hỗ trợ chia sẻ',
+      galleryTitle:'Ảnh đã chụp',
+      galleryEmpty:'Chưa có ảnh nào được lưu',
       altPhoto:'Ảnh vừa chụp',
       confirmLabel:'Đồng ý',
       cancelLabel:'Huỷ'
@@ -1045,6 +1048,7 @@
       phStage:'Stage',
       reloadCamera:'Reload camera',
       uploadTooltip:'Upload from album',
+      galleryTooltip:'View captured photos',
       toastImgError:'Could not open this image',
       captureLabel:'Capture',
       langCode:'EN',
@@ -1060,6 +1064,8 @@
       toastSaved:'Photo saved ✓',
       modalShare:'Share',
       toastShareUnsupported:'Sharing is not supported on this device',
+      galleryTitle:'Captured photos',
+      galleryEmpty:'No photos saved yet',
       altPhoto:'Captured photo',
       confirmLabel:'OK',
       cancelLabel:'Cancel'
@@ -1087,6 +1093,7 @@
 
     switchBtn.title = t('reloadCamera');
     uploadBtn.title = t('uploadTooltip');
+    galleryBtn.title = t('galleryTooltip');
     uploadBtn.setAttribute('aria-label', t('uploadTooltip'));
     captureBtn.title = t('captureLabel');
     themeBtn.title = t('themeTooltip');
@@ -1735,6 +1742,9 @@
     pendingDataUrl = dataUrl;
     previewImg.src = dataUrl;
     previewModal.classList.add('show');
+    // Tự động lưu vào thư viện ảnh của app ngay khi có ảnh đã đóng dấu chữ/logo,
+    // không cần chờ người dùng bấm "Lưu ảnh" ở bước xem trước.
+    addToGallery(dataUrl);
   }
   function closePreview(){
     previewModal.classList.remove('show');
@@ -1750,6 +1760,166 @@
   previewCancel.addEventListener('click', ()=>{
     closePreview();
   });
+
+  // ================= THƯ VIỆN ẢNH ĐÃ CHỤP =================
+  // Lưu trong localStorage của trình duyệt (riêng cho từng người dùng trên máy đó),
+  // chỉ giữ tối đa MAX_GALLERY_ITEMS ảnh gần nhất để tránh đầy bộ nhớ trình duyệt.
+  const GALLERY_KEY = 'ppv_gallery_v1';
+  const MAX_GALLERY_ITEMS = 24;
+  let gallery = [];
+  let gallerySelected = new Set();
+
+  function loadGallery(){
+    try{
+      const raw = localStorage.getItem(GALLERY_KEY);
+      gallery = raw ? JSON.parse(raw) : [];
+    }catch(e){ gallery = []; }
+  }
+  function saveGallery(){
+    try{
+      localStorage.setItem(GALLERY_KEY, JSON.stringify(gallery));
+    }catch(e){
+      // Hết dung lượng lưu trữ -> bớt một nửa ảnh cũ rồi thử lưu lại
+      if(gallery.length > 1){
+        gallery = gallery.slice(0, Math.ceil(gallery.length / 2));
+        try{ localStorage.setItem(GALLERY_KEY, JSON.stringify(gallery)); }catch(e2){}
+      }
+    }
+  }
+  function addToGallery(dataUrl){
+    gallery.unshift({ id: Date.now() + '_' + Math.random().toString(36).slice(2), dataUrl, ts: Date.now() });
+    if(gallery.length > MAX_GALLERY_ITEMS) gallery = gallery.slice(0, MAX_GALLERY_ITEMS);
+    saveGallery();
+    updateGalleryBadge();
+  }
+  function updateGalleryBadge(){
+    if(gallery.length > 0){
+      galleryBadge.textContent = gallery.length > 99 ? '99+' : String(gallery.length);
+      galleryBadge.hidden = false;
+    } else {
+      galleryBadge.hidden = true;
+    }
+  }
+
+  function galleryFileName(item, idx){
+    const d = new Date(item.ts);
+    const pad = n => String(n).padStart(2,'0');
+    return `anh_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}${idx!=null ? '_' + (idx+1) : ''}.jpg`;
+  }
+
+  function updateGalleryActionsState(){
+    const n = gallerySelected.size;
+    galleryDeleteSel.disabled = n === 0;
+    galleryDownloadSel.disabled = n === 0;
+    galleryShareSel.disabled = n === 0;
+    galleryTitle.textContent = n > 0
+      ? `${t('galleryTitle')} (${n}/${gallery.length})`
+      : `${t('galleryTitle')} (${gallery.length})`;
+  }
+
+  function renderGallery(){
+    galleryGrid.innerHTML = '';
+    if(!gallery.length){
+      const empty = document.createElement('div');
+      empty.className = 'gallery-empty';
+      empty.textContent = t('galleryEmpty');
+      galleryGrid.appendChild(empty);
+      updateGalleryActionsState();
+      return;
+    }
+    gallery.forEach(item => {
+      const thumb = document.createElement('div');
+      thumb.className = 'gallery-thumb' + (gallerySelected.has(item.id) ? ' selected' : '');
+      thumb.dataset.id = item.id;
+
+      const img = document.createElement('img');
+      img.src = item.dataUrl;
+      img.alt = '';
+      thumb.appendChild(img);
+
+      const check = document.createElement('div');
+      check.className = 'thumbCheck';
+      check.textContent = '✓';
+      thumb.appendChild(check);
+
+      const del = document.createElement('button');
+      del.className = 'thumbDelete';
+      del.textContent = '✕';
+      del.setAttribute('aria-label', 'Xoá ảnh này');
+      del.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        gallery = gallery.filter(g => g.id !== item.id);
+        gallerySelected.delete(item.id);
+        saveGallery();
+        updateGalleryBadge();
+        renderGallery();
+      });
+      thumb.appendChild(del);
+
+      thumb.addEventListener('click', ()=>{
+        if(gallerySelected.has(item.id)) gallerySelected.delete(item.id);
+        else gallerySelected.add(item.id);
+        thumb.classList.toggle('selected');
+        updateGalleryActionsState();
+      });
+
+      galleryGrid.appendChild(thumb);
+    });
+    updateGalleryActionsState();
+  }
+
+  function openGallery(){
+    gallerySelected.clear();
+    renderGallery();
+    galleryModal.classList.add('show');
+  }
+  function closeGallery(){
+    galleryModal.classList.remove('show');
+  }
+  galleryBtn.addEventListener('click', openGallery);
+  galleryCloseX.addEventListener('click', closeGallery);
+  galleryModal.addEventListener('click', (e)=>{
+    if(e.target === galleryModal) closeGallery();
+  });
+
+  galleryDeleteSel.addEventListener('click', ()=>{
+    if(!gallerySelected.size) return;
+    gallery = gallery.filter(g => !gallerySelected.has(g.id));
+    gallerySelected.clear();
+    saveGallery();
+    updateGalleryBadge();
+    renderGallery();
+  });
+
+  galleryDownloadSel.addEventListener('click', ()=>{
+    const items = gallery.filter(g => gallerySelected.has(g.id));
+    if(!items.length) return;
+    items.forEach((item, i)=> setTimeout(()=> triggerDownload(item.dataUrl), i * 250));
+    showToast(t('toastSaved'));
+  });
+
+  // Chia sẻ nhiều ảnh đã chọn cùng lúc qua menu chia sẻ hệ thống (Zalo, Messenger, AirDrop, ...)
+  galleryShareSel.addEventListener('click', async ()=>{
+    const items = gallery.filter(g => gallerySelected.has(g.id));
+    if(!items.length) return;
+    try{
+      const files = await Promise.all(items.map(async (item, idx)=>{
+        const blob = await (await fetch(item.dataUrl)).blob();
+        return new File([blob], galleryFileName(item, idx), { type:'image/jpeg' });
+      }));
+      if(navigator.canShare && navigator.canShare({ files })){
+        await navigator.share({ files });
+      } else {
+        items.forEach((item, i)=> setTimeout(()=> triggerDownload(item.dataUrl), i * 250));
+        showToast(t('toastShareUnsupported'));
+      }
+    }catch(e){
+      if(!e || e.name !== 'AbortError') showToast(t('toastShareUnsupported'));
+    }
+  });
+
+  loadGallery();
+  updateGalleryBadge();
 
   // Chia sẻ ảnh qua menu chia sẻ của hệ điều hành (Zalo, Messenger, AirDrop, ...)
   previewShare.addEventListener('click', async ()=>{
