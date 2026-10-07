@@ -783,6 +783,22 @@
     padding:14px 16px 10px;
   }
   .gallery-header .modal-title{ padding:0; }
+  .gallery-headerBtns{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex:0 0 auto;
+  }
+  .gallery-linkBtn{
+    border:none;
+    background:transparent;
+    color:#2f8fe0;
+    font-size:13px;
+    font-weight:700;
+    padding:4px 2px;
+    white-space:nowrap;
+  }
+  .gallery-linkBtn:active{ opacity:.6; }
   #galleryCloseX{
     width:30px;height:30px;
     border-radius:50%;
@@ -860,6 +876,67 @@
     gap:8px;
     padding:10px 16px calc(14px + var(--safe-b));
     border-top:1px solid var(--glass-border);
+  }
+
+  /* ---------- Lightbox: xem ảnh phóng to từ thư viện ---------- */
+  #lightboxModal{
+    position:fixed;
+    inset:0;
+    z-index:65;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    background:rgba(0,0,0,.75);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .2s ease;
+  }
+  #lightboxModal.show{ opacity:1; pointer-events:auto; }
+  .lightbox-card{
+    position:relative;
+    width:100%;
+    max-width:460px;
+    max-height:90dvh;
+    background:var(--modal-bg);
+    border:1px solid var(--glass-border);
+    border-radius:22px;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    box-shadow:0 24px 60px rgba(0,0,0,.5);
+    transform:scale(.95);
+    transition:transform .2s ease;
+  }
+  #lightboxModal.show .lightbox-card{ transform:scale(1); }
+  .lightbox-closeX{
+    position:absolute;
+    top:10px; right:10px;
+    z-index:2;
+    width:32px;height:32px;
+    border-radius:50%;
+    border:none;
+    background:rgba(0,0,0,.55);
+    color:#fff;
+    font-size:15px;
+    font-weight:700;
+  }
+  .lightbox-imgWrap{
+    background:#000;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    max-height:70dvh;
+    overflow:hidden;
+  }
+  .lightbox-imgWrap img{
+    display:block;
+    width:100%;
+    height:auto;
+    max-height:70dvh;
+    object-fit:contain;
   }
 </style>
 </head>
@@ -948,7 +1025,7 @@
       </div>
     </div>
     <div class="modal-actions">
-      <button id="previewCancel" class="modal-btn cancel">Huỷ</button>
+      <button id="previewCancel" class="modal-btn cancel">Chụp tiếp</button>
       <button id="previewOk" class="modal-btn ok">Lưu ảnh</button>
       <button id="previewShare" class="modal-btn share">Chia sẻ</button>
     </div>
@@ -959,13 +1036,28 @@
   <div class="gallery-card">
     <div class="gallery-header">
       <div id="galleryTitle" class="modal-title">Ảnh đã chụp</div>
-      <button id="galleryCloseX" aria-label="Đóng">✕</button>
+      <div class="gallery-headerBtns">
+        <button id="gallerySelectAll" class="gallery-linkBtn">Chọn tất cả</button>
+        <button id="galleryCloseX" aria-label="Đóng">✕</button>
+      </div>
     </div>
     <div id="galleryGrid" class="gallery-grid"></div>
     <div class="gallery-actions">
       <button id="galleryDeleteSel" class="modal-btn danger">Xoá</button>
       <button id="galleryDownloadSel" class="modal-btn cancel">Tải về</button>
       <button id="galleryShareSel" class="modal-btn share">Chia sẻ</button>
+    </div>
+  </div>
+</div>
+
+<div id="lightboxModal">
+  <div class="lightbox-card">
+    <button id="lightboxClose" class="lightbox-closeX" aria-label="Đóng">✕</button>
+    <div class="lightbox-imgWrap"><img id="lightboxImg" alt=""></div>
+    <div class="gallery-actions">
+      <button id="lightboxDelete" class="modal-btn danger">Xoá</button>
+      <button id="lightboxDownload" class="modal-btn cancel">Tải về</button>
+      <button id="lightboxShare" class="modal-btn share">Chia sẻ</button>
     </div>
   </div>
 </div>
@@ -995,6 +1087,13 @@
   const galleryDeleteSel = document.getElementById('galleryDeleteSel');
   const galleryDownloadSel = document.getElementById('galleryDownloadSel');
   const galleryShareSel = document.getElementById('galleryShareSel');
+  const gallerySelectAll = document.getElementById('gallerySelectAll');
+  const lightboxModal = document.getElementById('lightboxModal');
+  const lightboxImg = document.getElementById('lightboxImg');
+  const lightboxClose = document.getElementById('lightboxClose');
+  const lightboxDelete = document.getElementById('lightboxDelete');
+  const lightboxDownload = document.getElementById('lightboxDownload');
+  const lightboxShare = document.getElementById('lightboxShare');
   const previewImg = document.getElementById('previewImg');
   const previewOk = document.getElementById('previewOk');
   const previewCancel = document.getElementById('previewCancel');
@@ -1027,13 +1126,15 @@
       toastCamNotReady:'Camera chưa sẵn sàng',
       modalTitle:'Xem trước ảnh',
       modalNote:'Đối với người dùng iPhone, nhấn vào nút chia sẻ, sau đó bấm "Lưu hình ảnh".',
-      modalCancel:'Huỷ',
+      modalCancel:'Chụp tiếp',
       modalOk:'Lưu ảnh',
       toastSaved:'Đã lưu ảnh về máy ✓',
       modalShare:'Chia sẻ',
       toastShareUnsupported:'Thiết bị không hỗ trợ chia sẻ',
       galleryTitle:'Ảnh đã chụp',
       galleryEmpty:'Chưa có ảnh nào được lưu',
+      gallerySelectAll:'Chọn tất cả',
+      galleryDeselectAll:'Bỏ chọn',
       altPhoto:'Ảnh vừa chụp',
       confirmLabel:'Đồng ý',
       cancelLabel:'Huỷ'
@@ -1059,13 +1160,15 @@
       toastCamNotReady:'Camera not ready',
       modalTitle:'Photo preview',
       modalNote:'For iPhone users, tap the Share button, then tap “Save Image.”',
-      modalCancel:'Cancel',
+      modalCancel:'Shoot again',
       modalOk:'Save photo',
       toastSaved:'Photo saved ✓',
       modalShare:'Share',
       toastShareUnsupported:'Sharing is not supported on this device',
       galleryTitle:'Captured photos',
       galleryEmpty:'No photos saved yet',
+      gallerySelectAll:'Select all',
+      galleryDeselectAll:'Deselect',
       altPhoto:'Captured photo',
       confirmLabel:'OK',
       cancelLabel:'Cancel'
@@ -1815,6 +1918,10 @@
     galleryTitle.textContent = n > 0
       ? `${t('galleryTitle')} (${n}/${gallery.length})`
       : `${t('galleryTitle')} (${gallery.length})`;
+    gallerySelectAll.textContent = (gallery.length > 0 && n === gallery.length)
+      ? t('galleryDeselectAll')
+      : t('gallerySelectAll');
+    gallerySelectAll.disabled = gallery.length === 0;
   }
 
   function renderGallery(){
@@ -1835,11 +1942,22 @@
       const img = document.createElement('img');
       img.src = item.dataUrl;
       img.alt = '';
+      // Bấm vào ảnh -> xem phóng to (lightbox)
+      img.addEventListener('click', ()=> openLightbox(item.id));
       thumb.appendChild(img);
 
-      const check = document.createElement('div');
+      const check = document.createElement('button');
       check.className = 'thumbCheck';
       check.textContent = '✓';
+      check.setAttribute('aria-label', 'Chọn ảnh này');
+      // Bấm vào dấu tick -> chọn/bỏ chọn, không mở ảnh lớn
+      check.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        if(gallerySelected.has(item.id)) gallerySelected.delete(item.id);
+        else gallerySelected.add(item.id);
+        thumb.classList.toggle('selected');
+        updateGalleryActionsState();
+      });
       thumb.appendChild(check);
 
       const del = document.createElement('button');
@@ -1856,17 +1974,66 @@
       });
       thumb.appendChild(del);
 
-      thumb.addEventListener('click', ()=>{
-        if(gallerySelected.has(item.id)) gallerySelected.delete(item.id);
-        else gallerySelected.add(item.id);
-        thumb.classList.toggle('selected');
-        updateGalleryActionsState();
-      });
-
       galleryGrid.appendChild(thumb);
     });
     updateGalleryActionsState();
   }
+
+  // ---------- Chọn tất cả / Bỏ chọn tất cả ----------
+  gallerySelectAll.addEventListener('click', ()=>{
+    if(gallery.length > 0 && gallerySelected.size === gallery.length){
+      gallerySelected.clear();
+    } else {
+      gallerySelected = new Set(gallery.map(g => g.id));
+    }
+    renderGallery();
+  });
+
+  // ---------- Lightbox: xem 1 ảnh phóng to, có thể tải/chia sẻ/xoá ngay tại đây ----------
+  let lightboxItemId = null;
+  function openLightbox(id){
+    const item = gallery.find(g => g.id === id);
+    if(!item) return;
+    lightboxItemId = id;
+    lightboxImg.src = item.dataUrl;
+    lightboxModal.classList.add('show');
+  }
+  function closeLightbox(){
+    lightboxModal.classList.remove('show');
+    lightboxItemId = null;
+  }
+  lightboxClose.addEventListener('click', closeLightbox);
+  lightboxModal.addEventListener('click', (e)=>{
+    if(e.target === lightboxModal) closeLightbox();
+  });
+  lightboxDownload.addEventListener('click', ()=>{
+    const item = gallery.find(g => g.id === lightboxItemId);
+    if(item) triggerDownload(item.dataUrl);
+  });
+  lightboxDelete.addEventListener('click', ()=>{
+    gallery = gallery.filter(g => g.id !== lightboxItemId);
+    gallerySelected.delete(lightboxItemId);
+    saveGallery();
+    updateGalleryBadge();
+    closeLightbox();
+    renderGallery();
+  });
+  lightboxShare.addEventListener('click', async ()=>{
+    const item = gallery.find(g => g.id === lightboxItemId);
+    if(!item) return;
+    try{
+      const blob = await (await fetch(item.dataUrl)).blob();
+      const file = new File([blob], galleryFileName(item), { type:'image/jpeg' });
+      if(navigator.canShare && navigator.canShare({ files:[file] })){
+        await navigator.share({ files:[file] });
+      } else {
+        triggerDownload(item.dataUrl);
+        showToast(t('toastShareUnsupported'));
+      }
+    }catch(e){
+      if(!e || e.name !== 'AbortError') showToast(t('toastShareUnsupported'));
+    }
+  });
 
   function openGallery(){
     gallerySelected.clear();
