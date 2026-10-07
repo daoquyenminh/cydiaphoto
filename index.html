@@ -486,6 +486,13 @@
   .field-team{ background:linear-gradient(135deg, var(--c-team-a), var(--c-team-b)); }
   .field-stage{ background:linear-gradient(135deg, var(--c-stage-a), var(--c-stage-b)); }
 
+  /* Ô chưa điền (còn hiện placeholder): hiện dấu * đỏ nổi bật ở bên phải ô, tự mất khi đã có chữ */
+  :root{ --req-star: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cg stroke='%23ff3b30' stroke-width='3.2' stroke-linecap='round' fill='none'%3E%3Cpath d='M10 2.5v15M3.5 6.25l13 7.5M16.5 6.25l-13 7.5'/%3E%3C/g%3E%3C/svg%3E"); }
+  .field.field-item:placeholder-shown{ background:var(--req-star) no-repeat right 14px center / 18px 18px, linear-gradient(135deg, var(--c-item-a), var(--c-item-b)); }
+  .field.field-project:placeholder-shown{ background:var(--req-star) no-repeat right 14px center / 18px 18px, linear-gradient(135deg, var(--c-project-a), var(--c-project-b)); }
+  .field.field-team:placeholder-shown{ background:var(--req-star) no-repeat right 14px center / 18px 18px, linear-gradient(135deg, var(--c-team-a), var(--c-team-b)); }
+  .field.field-stage:placeholder-shown{ background:var(--req-star) no-repeat right 14px center / 18px 18px, linear-gradient(135deg, var(--c-stage-a), var(--c-stage-b)); }
+
   /* ---------- Khối Progress: giờ nằm gọn trong hàng nút dưới cùng ---------- */
   #progressBox{
     flex:0 0 auto;
@@ -503,6 +510,11 @@
     cursor:pointer;
     -webkit-tap-highlight-color:transparent;
   }
+  /* Chưa chọn phần trăm (đang 0%): hiện dấu * đỏ ở bên phải ô, giống các ô nhập còn trống */
+  #progressBox.needs{
+    background:var(--req-star) no-repeat right 14px center / 18px 18px, linear-gradient(135deg, var(--c-progress-a), var(--c-progress-b));
+  }
+  #progressBox.needs #progressSummary{ padding-right:38px; }
   #progressSummary{
     display:flex;
     align-items:center;
@@ -1067,7 +1079,7 @@
         <button id="captureBtn" title="Chụp"></button>
       </div>
       <div class="ctrlWrap right">
-        <div id="progressBox">
+        <div id="progressBox" class="needs">
           <div id="progressSummary">
             <span class="progressLabel">Progress</span>
             <span id="progressValueDisplay">0%</span>
@@ -1483,6 +1495,7 @@
     n = Math.max(0, Math.min(100, n));
     fieldProgress.value = n;
     progressValueDisplay.textContent = n + '%';
+    document.getElementById('progressBox').classList.toggle('needs', n === 0); // 0% = chưa chọn -> hiện dấu *
     invalidateOverlayCache();
     saveFieldsToStorage();
     return n;
