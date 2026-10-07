@@ -280,6 +280,23 @@
     box-shadow:0 8px 20px rgba(255,122,24,.45), inset 0 1px 0 rgba(255,255,255,.4);
   }
 
+  /* Dòng nhắc nằm giữa hàng gợi ý và 2 nút Huỷ/Đồng ý: nền đỏ, chữ vàng */
+  #bigEditHint{
+    display:none;
+    align-self:center;
+    background:#c62828;
+    color:#ffd84d;
+    border:1.5px solid rgba(255,216,77,.55);
+    border-radius:12px;
+    padding:8px 16px;
+    font-size:14px;
+    font-weight:800;
+    line-height:1.3;
+    text-align:center;
+    box-shadow:0 8px 20px rgba(198,40,40,.45);
+  }
+  #bigEditHint.show{ display:block; }
+
   #bigEditActions{
     display:flex;
     gap:10px;
@@ -1002,6 +1019,7 @@
       <div id="bigEditWrap">
         <input id="bigEdit" type="text" autocomplete="off" maxlength="40">
         <div id="bigEditSuggest"></div>
+        <div id="bigEditHint"></div>
         <div id="bigEditActions">
           <button type="button" id="bigEditCancel" class="bigEditBtn">✕ <span id="bigEditCancelLabel">Huỷ</span></button>
           <button type="button" id="bigEditOk" class="bigEditBtn">✓ <span id="bigEditOkLabel">Đồng ý</span></button>
@@ -1185,6 +1203,7 @@
       gallerySelectAll:'Chọn tất cả',
       galleryDeselectAll:'Bỏ chọn',
       altPhoto:'Ảnh vừa chụp',
+      bigEditHint:'Vui lòng chọn hoặc tự điền',
       confirmLabel:'Đồng ý',
       cancelLabel:'Huỷ'
     },
@@ -1219,6 +1238,7 @@
       gallerySelectAll:'Select all',
       galleryDeselectAll:'Deselect',
       altPhoto:'Captured photo',
+      bigEditHint:'Please choose or type your own',
       confirmLabel:'OK',
       cancelLabel:'Cancel'
     }
@@ -1261,6 +1281,7 @@
     bigEditCancelLabel.textContent = t('cancelLabel');
     bigEditOkLabel.textContent = t('confirmLabel');
     renderStageSuggestions();
+    bigEditHint.textContent = t('bigEditHint');
     bigProgressLabel.textContent = t('phProgress');
     progressLabelEl.textContent = t('phProgress');
     bigProgressCancelLabel.textContent = t('cancelLabel');
@@ -1301,6 +1322,7 @@
   const bigEditOkLabel = document.getElementById('bigEditOkLabel');
   const bigEditCancelLabel = document.getElementById('bigEditCancelLabel');
   const bigEditSuggest = document.getElementById('bigEditSuggest');
+  const bigEditHint = document.getElementById('bigEditHint');
 
   // Cây gợi ý cho ô Công đoạn. Mỗi mục: tên [tiếng Anh, tiếng Việt] + các công đoạn con cùng dạng.
   // Giao diện tiếng Anh hiện chữ tiếng Anh, giao diện tiếng Việt hiện chữ trong ngoặc (tiếng Việt).
@@ -1375,7 +1397,7 @@
     bigEditSuggest.appendChild(chip);
   }
   // Gợi ý cho ô Tên dự án (giống nhau ở mọi ngôn ngữ)
-  const projectSuggestions = ['SEV656', 'SEV657', 'SEV656,657', 'SEV655'];
+  const projectSuggestions = ['SEV656', 'SEV657', 'SEV656,657', 'SEV655', 'SEV658', 'SEV659', 'SEV660'];
 
   // suggestMode: 'stage' | 'project' | null — ô nhập phóng to đang gợi ý cho ô nào
   let suggestMode = null;
@@ -1441,6 +1463,7 @@
       // Chỉ ô Công đoạn và ô Tên dự án có gợi ý
       suggestMode = field === fieldStage ? 'stage' : (field === fieldProject ? 'project' : null);
       bigEditSuggest.classList.toggle('show', suggestMode !== null);
+      bigEditHint.classList.toggle('show', suggestMode !== null); // dòng nhắc chỉ hiện cùng hàng gợi ý
       if(suggestMode === 'stage') syncStageViewWithValue(field.value);
       else renderStageSuggestions();
       bigEditWrap.classList.add('show');
