@@ -2336,21 +2336,44 @@
   let pendingDataUrl = null;
   let pendingFileName = 'img.jpg';
 
-  function openPreview(dataUrl){
+  // pendingItem: ảnh đã nằm trong thư viện (ảnh chụp từ camera: có ngay khi mở xem trước).
+  // Ảnh TẢI LÊN từ album (opts.deferred): chưa vào thư viện, chỉ vào khi người dùng xác nhận (Lưu ảnh / Chia sẻ).
+  let pendingItem = null;
+  let uploadQueue = null; // { files, i, committed:[ids] } khi đang xem trước lần lượt các ảnh tải lên
+
+  function openPreview(dataUrl, opts){
+    opts = opts || {};
     pendingDataUrl = dataUrl;
     previewImg.src = dataUrl;
+    modalTitle.textContent = t('modalTitle') + (opts.total > 1 ? ` (${opts.index}/${opts.total})` : '');
     previewModal.classList.add('show');
-    // Tự động lưu vào thư viện ảnh của app ngay khi có ảnh đã đóng dấu chữ/logo,
-    // không cần chờ người dùng bấm "Lưu ảnh" ở bước xem trước.
-    const item = addToGallery(dataUrl);
-    pendingFileName = galleryFileName(item);
+    if(opts.deferred){
+      pendingItem = null;
+      pendingFileName = null;
+    } else {
+      // Ảnh chụp từ camera: tự động lưu vào thư viện ngay khi có ảnh đã đóng dấu chữ/logo,
+      // không cần chờ người dùng bấm "Lưu ảnh" ở bước xem trước.
+      pendingItem = addToGallery(dataUrl);
+      pendingFileName = galleryFileName(pendingItem);
+    }
+  }
+  // Xác nhận ảnh tải lên: đưa vào thư viện "ảnh đã chụp" (chỉ làm 1 lần cho mỗi ảnh)
+  function commitPending(){
+    if(!pendingItem && pendingDataUrl){
+      pendingItem = addToGallery(pendingDataUrl);
+      pendingFileName = galleryFileName(pendingItem);
+      if(uploadQueue) uploadQueue.committed.push(pendingItem.id);
+    }
   }
   function closePreview(){
     previewModal.classList.remove('show');
     pendingDataUrl = null;
+    pendingItem = null;
+    if(uploadQueue) setTimeout(showNextUpload, 0); // sang ảnh tiếp theo trong loạt tải lên (nếu có)
   }
   previewOk.addEventListener('click', ()=>{
     if(pendingDataUrl){
+      commitPending();
       triggerDownload(pendingDataUrl, pendingFileName);
       showToast(t('toastSaved'));
     }
@@ -2630,6 +2653,7 @@
   // Chia sẻ ảnh qua menu chia sẻ của hệ điều hành (Zalo, Messenger, AirDrop, ...)
   previewShare.addEventListener('click', async ()=>{
     if(!pendingDataUrl) return;
+    commitPending(); // ảnh tải lên: chia sẻ cũng coi là xác nhận -> đưa vào thư viện
     try{
       const blob = await (await fetch(pendingDataUrl)).blob();
       const file = new File([blob], pendingFileName, { type:'image/jpeg' });
@@ -2694,8 +2718,32 @@
     });
   }
 
+  // Ảnh tải lên: đóng dấu rồi cho XEM TRƯỚC từng ảnh; chỉ khi người dùng xác nhận (Lưu ảnh / Chia sẻ)
+  // thì mới lưu và đưa vào thư viện "ảnh đã chụp". Bấm Huỷ thì bỏ ảnh đó.
+  async function showNextUpload(){
+    const q = uploadQueue;
+    if(!q) return;
+    q.i++;
+    if(q.i >= q.files.length){
+      uploadQueue = null;
+      uploadBusy = false;
+      if(q.committed.length > 1){
+        showToast(t('toastBatchDone').replace('{n}', q.committed.length));
+        openGallery(q.committed); // mở thư viện với các ảnh vừa xác nhận đã chọn sẵn để tải về / chia sẻ cả loạt
+      }
+      return;
+    }
+    const dataUrl = await stampUploadedFile(q.files[q.i]);
+    if(!dataUrl){
+      showToast(t('toastImgError'));
+      showNextUpload();
+      return;
+    }
+    openPreview(dataUrl, { deferred:true, index:q.i + 1, total:q.files.length });
+  }
+
   let uploadBusy = false;
-  uploadInput.addEventListener('change', async ()=>{
+  uploadInput.addEventListener('change', ()=>{
     let files = Array.from(uploadInput.files || []);
     uploadInput.value = ''; // cho phép chọn lại cùng những ảnh lần sau
     if(!files.length || uploadBusy) return;
@@ -2704,34 +2752,9 @@
       showToast(t('toastTooMany').replace('{max}', MAX_GALLERY_ITEMS));
       files = files.slice(0, MAX_GALLERY_ITEMS);
     }
-
-    // 1 ảnh: giữ nguyên luồng cũ (mở màn hình xem trước)
-    if(files.length === 1){
-      const dataUrl = await stampUploadedFile(files[0]);
-      if(dataUrl) openPreview(dataUrl);
-      else showToast(t('toastImgError'));
-      return;
-    }
-
-    // Nhiều ảnh: đóng dấu lần lượt từng ảnh (tránh tốn RAM), tự lưu hết vào thư viện
     uploadBusy = true;
-    const newIds = [];
-    let failed = 0;
-    for(let i = 0; i < files.length; i++){
-      showToast(t('toastProcessing').replace('{cur}', i + 1).replace('{total}', files.length), 60000);
-      await new Promise(r => setTimeout(r, 30)); // nhường luồng cho giao diện kịp cập nhật
-      const dataUrl = await stampUploadedFile(files[i]);
-      if(dataUrl) newIds.push(addToGallery(dataUrl).id);
-      else failed++;
-    }
-    uploadBusy = false;
-
-    if(failed) showToast(t('toastImgError'));
-    if(newIds.length){
-      showToast(t('toastBatchDone').replace('{n}', newIds.length));
-      // Mở thư viện với các ảnh vừa tải đã chọn sẵn để tải về / chia sẻ cả loạt ngay
-      openGallery(newIds);
-    }
+    uploadQueue = { files, i:-1, committed:[] };
+    showNextUpload();
   });
 
   // ---------- Nút xoay Dọc / Ngang ----------
