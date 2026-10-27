@@ -1336,7 +1336,7 @@
     if(activeField){
       if(activePhKey) bigEdit.placeholder = t(activePhKey);
       if(activeField === fieldStage) setBigEditValue(translateStage(bigEdit.value));
-      bigEdit.focus();
+      // Không gọi bigEdit.focus() ở đây: nếu bàn phím đang tắt thì đổi ngôn ngữ không được làm nó bật lên
     }
   });
 
@@ -1504,7 +1504,10 @@
       if(suggestMode === 'stage') syncStageViewWithValue(field.value);
       else renderStageSuggestions();
       bigEditWrap.classList.add('show');
-      bigEdit.focus();
+      // Ô có gợi ý (Công đoạn / Tên dự án): KHÔNG tự bật bàn phím để không che các nút gợi ý.
+      // Bàn phím chỉ hiện khi người dùng chạm vào ô nhập lớn. Ô khác (Hạng mục, Tên tổ trưởng)
+      // không có gợi ý nên vẫn bật bàn phím ngay như trước.
+      if(suggestMode === null) bigEdit.focus();
     });
   }
   bindBigEdit(fieldItem, 'field-item', 'phItem');
@@ -1625,6 +1628,15 @@
   bigEdit.addEventListener('blur', ()=>{
     bigEditWrap.classList.remove('show');
   });
+
+  // Khi ô nhập lớn đang mở mà CHƯA focus (không có bàn phím), sự kiện blur sẽ không xảy ra,
+  // nên chạm ra ngoài khối này thì đóng thủ công (vẫn giữ nội dung đã chọn/gõ).
+  document.addEventListener('pointerdown', (e)=>{
+    if(!bigEditWrap.classList.contains('show')) return;
+    const target = e.target; // (không đặt tên 't' để khỏi trùng hàm dịch t())
+    if(bigEditWrap.contains(target) || langBtn.contains(target) || themeBtn.contains(target)) return;
+    closeBigEdit();
+  }, true);
 
   // Giữ focus cho ô nhập khi chạm vào 2 nút, để xử lý xong rồi mới tắt bàn phím
   bigEditOk.addEventListener('pointerdown', (e)=> e.preventDefault());
