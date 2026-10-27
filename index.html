@@ -52,6 +52,8 @@
     --slider-fill: #21c2c8;
     --slider-thumb: #ffffff;
 
+    --u-h: 1dvh;  /* 1% chiều CAO khung giao diện (đổi thành 1vw khi xoay giả) */
+    --u-w: 1vw;   /* 1% chiều RỘNG khung giao diện (đổi thành 1dvh khi xoay giả) */
     --field-h: 50px; /* chiều cao chung cho các ô input và ô Progress */
     --safe-t: env(safe-area-inset-top, 0px);
     --safe-b: env(safe-area-inset-bottom, 0px);
@@ -265,7 +267,7 @@
     outline:none;
     border-radius:20px;
     font-family:inherit;
-    font-size:clamp(20px, 6vw, 36px);
+    font-size:clamp(20px, calc(6 * var(--u-w)), 36px);
     font-weight:800;
     color:#fff;
     text-align:center;
@@ -415,7 +417,7 @@
     border:none;
     outline:none;
     font-family:inherit;
-    font-size:clamp(34px, 12vw, 56px);
+    font-size:clamp(34px, calc(12 * var(--u-w)), 56px);
     font-weight:800;
     color:#fff;
     text-align:right;
@@ -425,7 +427,7 @@
   #bigProgressInput::-webkit-outer-spin-button,
   #bigProgressInput::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
   #bigProgressPercentSign{
-    font-size:clamp(20px, 6vw, 32px);
+    font-size:clamp(20px, calc(6 * var(--u-w)), 32px);
     font-weight:800;
     color:rgba(255,255,255,.85);
   }
@@ -481,7 +483,7 @@
   /* ---------- PANEL (glass sheet) ---------- */
   #panel{
     flex:0 0 auto;
-    max-height:48dvh;
+    max-height:calc(48 * var(--u-h));
     overflow-y:auto;
     background:var(--glass-bg);
     backdrop-filter:blur(36px) saturate(200%);
@@ -661,7 +663,7 @@
     #camArea{ flex:1 1 auto; min-width:0; align-items:center; padding:14px; }
     #panel{
       flex:0 0 auto;
-      width:min(38vw, 360px);
+      width:min(calc(38 * var(--u-w)), 360px);
       min-width:260px;
       max-height:none;
       height:100%;
@@ -705,9 +707,59 @@
     #camWrap{ aspect-ratio:4/3; }
   }
 
+  /* ---- Bản sao của khối landscape ở trên, dùng khi giao diện bị XOAY GIẢ (html.force-land) ---- */
+  html.force-land #app{ flex-direction:row; }
+    html.force-land{ --field-h: 40px; }  /* màn ngang thấp: ô nhập gọn hơn để cả panel vừa chiều cao màn hình */
+    html.force-land #camArea{ flex:1 1 auto; min-width:0; align-items:center; padding:14px; }
+    html.force-land #panel{
+      flex:0 0 auto;
+      width:min(calc(38 * var(--u-w)), 360px);
+      min-width:260px;
+      max-height:none;
+      height:100%;
+      border-top:none;
+      border-left:1px solid var(--glass-border);
+      border-radius:26px 0 0 26px;
+      box-shadow:var(--shadow-panel-land), inset 0 1px 0 rgba(255,255,255,.08);
+      justify-content:center;
+      align-items:stretch;
+      padding:18px calc(16px + var(--safe-r)) 18px 18px;
+      gap:14px;
+      overflow-y:auto;
+    }
+    html.force-land .row{ flex-direction:column; flex:0 0 auto; }
+    /* Khi .row xếp dọc, flex:1 của .field bị hiểu là chiều CAO (basis 0) nên ô bị co lại;
+       đặt flex:none để ô giữ đúng chiều cao var(--field-h) như lúc chụp dọc */
+    html.force-land .field{ flex:0 0 auto; }
+    /* Bố cục ngang: hàng 1 = ô Progress full rộng; hàng 2 = 5 cột đều nhau, nút chụp ở CỘT GIỮA
+       (đúng tâm panel): [tải lại] [album] [CHỤP] [thư viện] [trống].
+       Cụm album - chụp - thư viện đối xứng quanh nút chụp. */
+    html.force-land #captureRow{
+      display:grid;
+      grid-template-columns:1fr 1fr auto 1fr 1fr;
+      align-items:center;
+      justify-items:center;
+      margin-top:2px;
+      gap:10px 6px;
+    }
+    html.force-land .ctrlWrap.left{ display:contents; }          /* 3 nút phụ trở thành ô trực tiếp của lưới */
+    html.force-land .ctrlWrap.right{ grid-column:1 / -1; grid-row:1; justify-self:stretch; }
+    html.force-land #switchBtn{ grid-column:1; grid-row:2; }
+    html.force-land #uploadBtn{ grid-column:2; grid-row:2; }
+    html.force-land .captureWrap{ grid-column:3; grid-row:2; justify-content:center; }
+    html.force-land #galleryBtn{ grid-column:4; grid-row:2; position:relative; left:14px; } /* nhích sang phải một chút cho thoáng, cách xa nút chụp hơn */
+    html.force-land .glassBtn{ width:42px; height:42px; font-size:17px; }
+    html.force-land #captureBtn{ width:64px; height:64px; }
+    html.force-land #progressBox{ width:100%; }
+    html.force-land .pillLabel, html.force-land .pillBtn{ font-size:10.5px; padding:6px 9px; }
+    html.force-land #topLeftControls{ top:10px; left:10px; gap:6px; }
+    html.force-land #orientBtn{ top:10px; }
+    html.force-land #camWrap{ aspect-ratio:4/3; }
+
+
   #toast{
     position:fixed;
-    bottom:calc(48dvh + 14px);
+    bottom:calc(calc(48 * var(--u-h)) + 14px);
     left:50%;
     transform:translateX(-50%);
     background:var(--toast-bg);
@@ -729,6 +781,10 @@
   @media (orientation: landscape){
     #toast{ bottom:18px; }
   }
+
+  /* ---- Bản sao của khối landscape ở trên, dùng khi giao diện bị XOAY GIẢ (html.force-land) ---- */
+  html.force-land #toast{ bottom:18px; }
+
   #flash{
     position:fixed;
     inset:0;
@@ -774,7 +830,7 @@
     width:100%;
     max-width:420px;
     min-height:0;
-    max-height:calc(88dvh - var(--modal-btn-gap) - 60px);
+    max-height:calc(calc(88 * var(--u-h)) - var(--modal-btn-gap) - 60px);
     background:var(--modal-bg);
     border:1px solid var(--glass-border);
     border-radius:22px;
@@ -791,14 +847,14 @@
     display:flex;
     align-items:center;
     justify-content:center;
-    max-height:52dvh;
+    max-height:calc(52 * var(--u-h));
     overflow:hidden;
   }
   .modal-imgWrap img{
     display:block;
     width:100%;
     height:auto;
-    max-height:52dvh;
+    max-height:calc(52 * var(--u-h));
     object-fit:contain;
   }
   .modal-title{
@@ -893,7 +949,7 @@
   .gallery-card{
     width:100%;
     max-width:460px;
-    max-height:88dvh;
+    max-height:calc(88 * var(--u-h));
     background:var(--modal-bg);
     border:1px solid var(--glass-border);
     border-radius:22px;
@@ -1033,7 +1089,7 @@
     position:relative;
     width:100%;
     max-width:460px;
-    max-height:90dvh;
+    max-height:calc(90 * var(--u-h));
     background:var(--modal-bg);
     border:1px solid var(--glass-border);
     border-radius:22px;
@@ -1062,16 +1118,40 @@
     display:flex;
     align-items:center;
     justify-content:center;
-    max-height:70dvh;
+    max-height:calc(70 * var(--u-h));
     overflow:hidden;
   }
   .lightbox-imgWrap img{
     display:block;
     width:100%;
     height:auto;
-    max-height:70dvh;
+    max-height:calc(70 * var(--u-h));
     object-fit:contain;
   }
+
+  /* ================= XOAY GIẢ GIAO DIỆN SANG NGANG (không cần tắt khoá xoay) =================
+     Khi máy đang dọc mà người dùng bấm "Ngang" (và trình duyệt không khoá được hướng),
+     cả <body> được xoay 90° để hiện bố cục ngang; người dùng xoay điện thoại ngang (đầu máy về bên trái). */
+  html.force-land{ --u-h:1vw; --u-w:1dvh; }
+  html.force-land body{
+    position:fixed;
+    top:0; left:0;
+    width:100dvh;
+    height:100vw;
+    transform-origin:top left;
+    transform:translateX(100vw) rotate(90deg);
+    overflow:hidden;
+  }
+  html.force-land #app{
+    width:100%;
+    height:100%;
+    /* vùng an toàn (tai thỏ / thanh home) xoay theo giao diện */
+    padding-top:var(--safe-l);
+    padding-right:var(--safe-b);
+    padding-bottom:var(--safe-r);
+    padding-left:var(--safe-t);
+  }
+  html.force-land #camWrap{ aspect-ratio:4/3; height:auto; max-height:100%; }
 </style>
 </head>
 <body>
@@ -1285,7 +1365,7 @@
       bigEditHint:'Vui lòng chọn hoặc tự điền',
       orientPortrait:'Dọc',
       orientLandscape:'Ngang',
-      toastOrientUnsupported:'Máy không cho web tự xoay. Hãy tắt khoá xoay màn hình rồi xoay ngang điện thoại',
+      toastOrientRotatePhone:'Hãy xoay điện thoại về dọc',
       confirmLabel:'Đồng ý',
       cancelLabel:'Huỷ'
     },
@@ -1326,7 +1406,7 @@
       bigEditHint:'Please choose or type your own',
       orientPortrait:'Portrait',
       orientLandscape:'Landscape',
-      toastOrientUnsupported:'This device does not let web pages rotate the screen. Turn off rotation lock, then turn your phone sideways',
+      toastOrientRotatePhone:'Please turn your phone upright',
       confirmLabel:'OK',
       cancelLabel:'Cancel'
     }
@@ -1891,7 +1971,11 @@
 
   function resizeCanvas(){
     const wrap = document.getElementById('camWrap');
-    const rect = wrap.getBoundingClientRect();
+    // Khi giao diện bị xoay giả bằng CSS transform, getBoundingClientRect trả về hộp bao ĐÃ XOAY
+    // (rộng/cao bị đảo) -> dùng kích thước layout (offsetWidth/Height) vốn không bị transform ảnh hưởng.
+    const rect = isForcedLandscape()
+      ? { width: wrap.offsetWidth, height: wrap.offsetHeight }
+      : wrap.getBoundingClientRect();
     if(rect.width < 2 || rect.height < 2) return;
 
     // QUAN TRỌNG: luôn đồng bộ kích thước HIỂN THỊ (CSS) theo khung camWrap mới nhất,
@@ -2119,12 +2203,33 @@
     context.drawImage(logoImg, w - logoW - marginX, marginY, logoW, logoH);
   }
 
+  // ---------- Xoay giả giao diện: khung hình camera cũng phải xoay theo ----------
+  const isForcedLandscape = ()=> document.documentElement.classList.contains('force-land');
+  // Khi giao diện bị xoay giả mà camera vẫn trả khung hình DỌC (trình duyệt giữ hướng theo khoá xoay),
+  // phải xoay khung hình 90° ngược chiều để hình hiển thị/chụp ra thẳng đứng với người cầm máy ngang.
+  function frameNeedsRotation(){ return isForcedLandscape() && vh > vw; }
+  // Vẽ vùng crop (toạ độ trong không gian ĐÃ XOAY nếu rot=true) của video vào context kích thước dstW x dstH
+  function drawVideoCrop(context, dstW, dstH, crop, rot){
+    if(!rot){
+      context.drawImage(video, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, dstW, dstH);
+      return;
+    }
+    context.save();
+    context.scale(dstW / crop.sw, dstH / crop.sh);
+    context.translate(-crop.sx, -crop.sy);
+    // xoay video 90° ngược chiều kim đồng hồ: (x, y) -> (y, vw - x)
+    context.transform(0, -1, 1, 0, 0, vw);
+    context.drawImage(video, 0, 0, vw, vh);
+    context.restore();
+  }
+
   function renderFrame(){
     if(video.readyState >= 2 && vw && vh && stage.width && stage.height){
       const w = stage.width, h = stage.height;
-      const crop = computeCoverCrop(vw, vh, w, h);
+      const rot = frameNeedsRotation();
+      const crop = rot ? computeCoverCrop(vh, vw, w, h) : computeCoverCrop(vw, vh, w, h);
       // 1) vẽ khung hình camera (rẻ, GPU lo phần lớn)
-      ctx.drawImage(video, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, w, h);
+      drawVideoCrop(ctx, w, h, crop, rot);
       // 2) chỉ vẽ lại chữ/logo khi nội dung thật sự đổi, còn lại chỉ ghép ảnh cache (rất rẻ)
       rebuildOverlayCacheIfNeeded(w, h);
       ctx.drawImage(overlayCanvas, 0, 0);
@@ -2544,12 +2649,13 @@
     flashEl.classList.add('on');
     setTimeout(()=> flashEl.classList.remove('on'), 180);
 
-    const crop = computeCoverCrop(vw, vh, stage.width, stage.height);
+    const rot = frameNeedsRotation();
+    const crop = rot ? computeCoverCrop(vh, vw, stage.width, stage.height) : computeCoverCrop(vw, vh, stage.width, stage.height);
     const out = document.createElement('canvas');
     out.width = Math.round(crop.sw);
     out.height = Math.round(crop.sh);
     const octx = out.getContext('2d');
-    octx.drawImage(video, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, out.width, out.height);
+    drawVideoCrop(octx, out.width, out.height, crop, rot);
     drawOverlayText(octx, out.width, out.height);
     drawLogo(octx, out.width, out.height);
 
@@ -2630,39 +2736,73 @@
 
   // ---------- Nút xoay Dọc / Ngang ----------
   // Nhãn hiển thị CHẾ ĐỘ HIỆN TẠI; bấm để chuyển sang chế độ còn lại.
-  // Dùng Screen Orientation API (Android Chrome: cần vào toàn màn hình mới khoá được hướng).
-  // iPhone/iOS không cho trang web tự xoay màn hình -> báo hướng dẫn tắt khoá xoay.
+  //  1) Máy/trình duyệt khoá được hướng (Android Chrome, vào toàn màn hình): dùng Screen Orientation API.
+  //  2) Không khoá được (iPhone/iOS, hoặc khoá xoay đang bật): XOAY GIẢ bằng CSS (class html.force-land)
+  //     -> hiện bố cục ngang ngay cả khi máy đang dọc và khoá xoay vẫn bật; người dùng chỉ cần cầm máy ngang.
+  const FORCE_KEY = 'ppv_force_landscape';
   const orientBtn = document.getElementById('orientBtn');
   const orientLabel = document.getElementById('orientLabel');
   const orientMQ = window.matchMedia ? window.matchMedia('(orientation: landscape)') : null;
-  const isLandscapeNow = ()=> orientMQ ? orientMQ.matches : window.innerWidth > window.innerHeight;
+  const isNativeLandscape = ()=> orientMQ ? orientMQ.matches : window.innerWidth > window.innerHeight;
+  let forceWanted = false;
+  try{ forceWanted = localStorage.getItem(FORCE_KEY) === '1'; }catch(e){}
+
+  // Bật/tắt class xoay giả: chỉ bật khi người dùng muốn VÀ máy đang thật sự ở hướng dọc
+  // (nếu máy tự xoay ngang rồi thì dùng bố cục ngang thật, không xoay thêm).
+  function applyForcedLandscape(){
+    const on = forceWanted && !isNativeLandscape();
+    document.documentElement.classList.toggle('force-land', on);
+    updateOrientLabel();
+    resizeCanvas();
+    [60, 200, 500].forEach(ms => setTimeout(resizeCanvas, ms));
+  }
+  function setForceWanted(v){
+    forceWanted = v;
+    try{ localStorage.setItem(FORCE_KEY, v ? '1' : '0'); }catch(e){}
+    applyForcedLandscape();
+  }
   function updateOrientLabel(){
-    orientLabel.textContent = t(isLandscapeNow() ? 'orientLandscape' : 'orientPortrait');
+    const land = isNativeLandscape() || isForcedLandscape();
+    orientLabel.textContent = t(land ? 'orientLandscape' : 'orientPortrait');
   }
   orientBtn.addEventListener('click', async ()=>{
+    // Đang ở chế độ ngang giả -> tắt, về dọc
+    if(isForcedLandscape()){ setForceWanted(false); return; }
     const so = screen.orientation;
-    if(!so || typeof so.lock !== 'function'){ showToast(t('toastOrientUnsupported'), 3500); return; }
-    try{
-      if(!isLandscapeNow()){
+    const canLock = so && typeof so.lock === 'function';
+    if(isNativeLandscape()){
+      // Máy đang ngang thật: chỉ chuyển về dọc được khi khoá hướng được (Android)
+      if(canLock){
+        try{ await so.lock('portrait'); }catch(e){ showToast(t('toastOrientRotatePhone'), 3500); }
+      } else {
+        setForceWanted(false);
+        showToast(t('toastOrientRotatePhone'), 3500);
+      }
+      [100, 400, 900].forEach(ms => setTimeout(updateOrientLabel, ms));
+      return;
+    }
+    // Máy đang dọc, muốn sang ngang: thử khoá hướng thật trước
+    if(canLock){
+      try{
         const el = document.documentElement;
         if(!document.fullscreenElement && el.requestFullscreen) await el.requestFullscreen();
         await so.lock('landscape');
-      } else {
-        await so.lock('portrait');
-      }
-    }catch(e){
-      showToast(t('toastOrientUnsupported'), 3500);
+        [100, 400, 900].forEach(ms => setTimeout(()=>{ updateOrientLabel(); resizeCanvas(); }, ms));
+        return;
+      }catch(e){ /* không khoá được -> rơi xuống xoay giả bên dưới */ }
     }
-    [100, 400, 900].forEach(ms => setTimeout(updateOrientLabel, ms));
+    setForceWanted(true);
   });
   if(orientMQ){
-    if(orientMQ.addEventListener) orientMQ.addEventListener('change', updateOrientLabel);
-    else if(orientMQ.addListener) orientMQ.addListener(updateOrientLabel);
+    const onChange = ()=>{ applyForcedLandscape(); };
+    if(orientMQ.addEventListener) orientMQ.addEventListener('change', onChange);
+    else if(orientMQ.addListener) orientMQ.addListener(onChange);
   }
   window.addEventListener('resize', updateOrientLabel);
 
   loadFieldsFromStorage();
   applyLanguage(currentLang);
+  applyForcedLandscape(); // khôi phục chế độ xoay giả nếu lần trước đang bật
   startCamera();
 })();
 </script>
