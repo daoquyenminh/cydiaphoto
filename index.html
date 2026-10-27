@@ -222,9 +222,33 @@
     z-index:6;
   }
   #bigEditWrap.show{ opacity:1; transform:translate(-50%,0) scale(1); pointer-events:auto; }
+  #bigEditBox{ position:relative; }
+  /* Nút xoá nội dung ô nhập (chỉ hiện khi ô có chữ) */
+  #bigEditClear{
+    display:none;
+    position:absolute;
+    right:12px;
+    top:50%;
+    transform:translateY(-50%);
+    width:36px;
+    height:36px;
+    border:none;
+    border-radius:50%;
+    background:rgba(0,0,0,.35);
+    color:#fff;
+    font-size:16px;
+    font-weight:800;
+    line-height:1;
+    padding:0;
+    cursor:pointer;
+    -webkit-appearance:none;
+    appearance:none;
+  }
+  #bigEditBox.hasText #bigEditClear{ display:flex; align-items:center; justify-content:center; }
+  #bigEditClear:active{ transform:translateY(-50%) scale(.92); background:rgba(0,0,0,.55); }
   #bigEdit{
     width:100%;
-    padding:16px 24px;
+    padding:16px 56px;
     border:none;
     outline:none;
     border-radius:20px;
@@ -1044,7 +1068,10 @@
         <button id="langBtn" class="pillBtn" title="Chuyển ngôn ngữ / Switch language">VI</button>
       </div>
       <div id="bigEditWrap">
-        <input id="bigEdit" type="text" autocomplete="off" maxlength="40">
+        <div id="bigEditBox">
+          <input id="bigEdit" type="text" autocomplete="off" maxlength="40">
+          <button type="button" id="bigEditClear" aria-label="Xoá" title="Xoá">✕</button>
+        </div>
         <div id="bigEditSuggest"></div>
         <div id="bigEditHint"></div>
         <div id="bigEditActions">
@@ -1356,6 +1383,8 @@
   const bigEditCancelLabel = document.getElementById('bigEditCancelLabel');
   const bigEditSuggest = document.getElementById('bigEditSuggest');
   const bigEditHint = document.getElementById('bigEditHint');
+  const bigEditBox = document.getElementById('bigEditBox');
+  const bigEditClear = document.getElementById('bigEditClear');
 
   // Cây gợi ý cho ô Công đoạn. Mỗi mục: tên [tiếng Anh, tiếng Việt] + các công đoạn con cùng dạng.
   // Giao diện tiếng Anh hiện chữ tiếng Anh, giao diện tiếng Việt hiện chữ trong ngoặc (tiếng Việt).
@@ -1497,6 +1526,7 @@
       activePhKey = phKey;
       bigEdit.placeholder = t(phKey);
       bigEdit.value = field.value;
+      updateClearBtn();
       // Chỉ ô Công đoạn và ô Tên dự án có gợi ý
       suggestMode = field === fieldStage ? 'stage' : (field === fieldProject ? 'project' : null);
       bigEditSuggest.classList.toggle('show', suggestMode !== null);
@@ -1610,9 +1640,34 @@
   // thanh trượt sẽ tự tắt giữa chừng khi vừa kéo xong. Chỉ đóng khi bấm Đồng ý/Huỷ
   // hoặc nhấn Enter trên bàn phím (2 chỗ phía trên).
 
+  // Quy tắc tự điền: Tên tổ trưởng là "Nhuần" (không phân biệt hoa/thường, có hay không dấu)
+  // thì Công đoạn tự đặt thành "Xe nâng" / "Forklift" theo ngôn ngữ đang dùng.
+  const teamAutoStage = { 'nhuan': 'Forklift' };
+  const normKey = (v)=> v.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d');
+  function applyTeamAutoStage(){
+    const stageEn = teamAutoStage[normKey(fieldTeam.value)];
+    if(!stageEn) return;
+    const node = stageTree.find(n => n.n[0] === stageEn);
+    if(!node) return;
+    // Nếu Công đoạn đã thuộc Xe nâng (vd. "Xe nâng - Bọc hàng") thì giữ nguyên, không ghi đè mục con
+    if(findStageNode(fieldStage.value.split(STAGE_SPLIT)[0].trim()) === node) return;
+    fieldStage.value = stageText(node.n);
+    saveFieldsToStorage();
+    invalidateOverlayCache();
+  }
+
+  function updateClearBtn(){ bigEditBox.classList.toggle('hasText', bigEdit.value.length > 0); }
   bigEdit.addEventListener('input', ()=>{
     if(activeField) activeField.value = bigEdit.value;
+    updateClearBtn();
+    if(activeField === fieldTeam) applyTeamAutoStage();
     saveFieldsToStorage();
+  });
+  // Nút xoá: giữ nguyên trạng thái focus/bàn phím hiện tại, chỉ xoá chữ
+  bigEditClear.addEventListener('pointerdown', (e)=> e.preventDefault());
+  bigEditClear.addEventListener('click', ()=>{
+    setBigEditValue('');
+    if(suggestMode === 'stage'){ stageView = -1; renderStageSuggestions(); } // về lại danh sách công đoạn chính
   });
 
   function closeBigEdit(){
