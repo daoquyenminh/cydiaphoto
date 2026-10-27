@@ -2204,7 +2204,36 @@
       }
     }
   }
+  // ---------- Tự xoá ảnh của ngày hôm trước ----------
+  // Thư viện chỉ giữ ảnh chụp trong NGÀY HÔM NAY (theo giờ máy). Sau 0:00, hoặc khi người dùng
+  // mở lại app vào ngày hôm sau, các ảnh của ngày cũ bị xoá khỏi thư viện.
+  function purgeOldGallery(){
+    const today = todayKey(new Date());
+    const kept = gallery.filter(it => todayKey(new Date(it.ts)) === today);
+    if(kept.length === gallery.length) return false;
+    gallery = kept;
+    for(const id of Array.from(gallerySelected)){
+      if(!kept.some(it => it.id === id)) gallerySelected.delete(id);
+    }
+    saveGallery();
+    updateGalleryBadge();
+    if(galleryModal.classList.contains('show')) renderGallery();
+    return true;
+  }
+  // Hẹn giờ xoá đúng lúc 0:00 khi app đang mở xuyên đêm
+  function scheduleMidnightPurge(){
+    const now = new Date();
+    const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 1);
+    clearTimeout(scheduleMidnightPurge._t);
+    scheduleMidnightPurge._t = setTimeout(()=>{ purgeOldGallery(); scheduleMidnightPurge(); }, next - now);
+  }
+  // Điện thoại có thể "ngủ" tab qua đêm làm hẹn giờ bị trễ -> kiểm tra lại mỗi khi quay lại app
+  document.addEventListener('visibilitychange', ()=>{
+    if(!document.hidden){ purgeOldGallery(); scheduleMidnightPurge(); }
+  });
+
   function addToGallery(dataUrl){
+    purgeOldGallery();
     const item = { id: Date.now() + '_' + Math.random().toString(36).slice(2), dataUrl, ts: Date.now(), no: nextImageNumber() };
     gallery.unshift(item);
     if(gallery.length > MAX_GALLERY_ITEMS) gallery = gallery.slice(0, MAX_GALLERY_ITEMS);
@@ -2353,6 +2382,7 @@
   });
 
   function openGallery(preselectIds){
+    purgeOldGallery();
     gallerySelected.clear();
     if(Array.isArray(preselectIds)) preselectIds.forEach(id => gallerySelected.add(id));
     renderGallery();
@@ -2404,7 +2434,9 @@
   });
 
   loadGallery();
+  purgeOldGallery();
   updateGalleryBadge();
+  scheduleMidnightPurge();
 
   // Chia sẻ ảnh qua menu chia sẻ của hệ điều hành (Zalo, Messenger, AirDrop, ...)
   previewShare.addEventListener('click', async ()=>{
