@@ -1150,6 +1150,136 @@
     object-fit:contain;
   }
 
+  /* ---------- Duyệt nhiều ảnh tải lên: danh sách + xem to có nút trái/phải ---------- */
+  #uploadReviewModal{
+    position:fixed;
+    inset:0;
+    z-index:62;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    background:var(--modal-overlay);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .2s ease;
+  }
+  #uploadReviewModal.show{ opacity:1; pointer-events:auto; }
+  #uploadReviewModal.show .gallery-card{ transform:scale(1); }
+  #uploadReviewModal .modal-title{ display:flex; align-items:center; gap:10px; }
+  .upload-count{
+    display:inline-flex;
+    align-items:center;
+    padding:4px 12px;
+    border-radius:999px;
+    background:linear-gradient(135deg,#6fce6a,#3fae55);
+    color:#fff;
+    font-size:13px;
+    font-weight:800;
+    white-space:nowrap;
+  }
+  .upload-hint{
+    padding:0 16px 8px;
+    font-size:12.5px;
+    color:var(--muted);
+    line-height:1.4;
+  }
+  #uploadReviewGrid .gallery-thumb{ cursor:pointer; }
+  .thumbIndex{
+    position:absolute;
+    bottom:5px; left:5px;
+    min-width:20px;
+    height:20px;
+    padding:0 6px;
+    border-radius:999px;
+    background:rgba(0,0,0,.6);
+    color:#fff;
+    font-size:11px;
+    font-weight:800;
+    line-height:20px;
+    text-align:center;
+    pointer-events:none;
+  }
+  #uploadConfirm:disabled{ opacity:.45; pointer-events:none; }
+
+  #uploadViewer{
+    position:fixed;
+    inset:0;
+    z-index:70;
+    display:flex;
+    flex-direction:column;
+    background:rgba(0,0,0,.94);
+    backdrop-filter:blur(10px);
+    -webkit-backdrop-filter:blur(10px);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .2s ease;
+  }
+  #uploadViewer.show{ opacity:1; pointer-events:auto; }
+  .uv-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 16px 8px;
+  }
+  .uv-close{
+    width:36px;height:36px;
+    border-radius:50%;
+    border:none;
+    background:rgba(255,255,255,.16);
+    color:#fff;
+    font-size:16px;
+    font-weight:700;
+  }
+  .uv-stage{
+    position:relative;
+    flex:1;
+    min-height:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:0 6px;
+    touch-action:pan-y;
+  }
+  .uv-stage img{
+    display:block;
+    max-width:100%;
+    max-height:calc(72 * var(--u-h));
+    object-fit:contain;
+    border-radius:6px;
+    user-select:none;
+    -webkit-user-select:none;
+    -webkit-user-drag:none;
+  }
+  .uv-nav{
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+    width:50px;height:50px;
+    border-radius:50%;
+    border:1px solid rgba(255,255,255,.3);
+    background:rgba(20,20,24,.62);
+    color:#fff;
+    font-size:30px;
+    line-height:1;
+    padding:0 0 4px;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 6px 18px rgba(0,0,0,.45);
+    z-index:2;
+  }
+  .uv-prev{ left:10px; }
+  .uv-next{ right:10px; }
+  .uv-nav:active{ transform:translateY(-50%) scale(.92); }
+  .uv-nav:disabled{ opacity:.25; pointer-events:none; }
+  .uv-bottom{
+    display:flex;
+    gap:10px;
+    padding:10px 16px calc(14px + var(--safe-b));
+  }
+  .uv-bottom .modal-btn{ flex:1; }
+
   /* ================= XOAY GIẢ GIAO DIỆN SANG NGANG (không cần tắt khoá xoay) =================
      Khi máy đang dọc mà người dùng bấm "Ngang" (và trình duyệt không khoá được hướng),
      cả <body> được xoay 90° để hiện bố cục ngang; người dùng xoay điện thoại ngang (đầu máy về bên trái). */
@@ -1306,6 +1436,36 @@
   </div>
 </div>
 
+<div id="uploadReviewModal">
+  <div class="gallery-card">
+    <div class="gallery-header">
+      <div class="modal-title"><span id="uploadReviewTitle">Ảnh tải lên</span><span id="uploadReviewCount" class="upload-count">0</span></div>
+    </div>
+    <div id="uploadReviewHint" class="upload-hint"></div>
+    <div id="uploadReviewGrid" class="gallery-grid"></div>
+    <div class="gallery-actions">
+      <button id="uploadDiscard" class="modal-btn cancel">Huỷ</button>
+      <button id="uploadConfirm" class="modal-btn ok">Xác nhận</button>
+    </div>
+  </div>
+</div>
+
+<div id="uploadViewer">
+  <div class="uv-top">
+    <div id="uvCounter" class="upload-count">1 / 1</div>
+    <button id="uvClose" class="uv-close" aria-label="Đóng">✕</button>
+  </div>
+  <div id="uvStage" class="uv-stage">
+    <button id="uvPrev" class="uv-nav uv-prev" aria-label="Ảnh trước">‹</button>
+    <img id="uvImg" alt="" draggable="false">
+    <button id="uvNext" class="uv-nav uv-next" aria-label="Ảnh sau">›</button>
+  </div>
+  <div class="uv-bottom">
+    <button id="uvRemove" class="modal-btn danger">Bỏ ảnh này</button>
+    <button id="uvDone" class="modal-btn ok">Xong</button>
+  </div>
+</div>
+
 <script>
 (function(){
   const video = document.getElementById('video');
@@ -1338,6 +1498,22 @@
   const lightboxDelete = document.getElementById('lightboxDelete');
   const lightboxDownload = document.getElementById('lightboxDownload');
   const lightboxShare = document.getElementById('lightboxShare');
+  const uploadReviewModal = document.getElementById('uploadReviewModal');
+  const uploadReviewTitle = document.getElementById('uploadReviewTitle');
+  const uploadReviewCount = document.getElementById('uploadReviewCount');
+  const uploadReviewHint = document.getElementById('uploadReviewHint');
+  const uploadReviewGrid = document.getElementById('uploadReviewGrid');
+  const uploadDiscard = document.getElementById('uploadDiscard');
+  const uploadConfirm = document.getElementById('uploadConfirm');
+  const uploadViewer = document.getElementById('uploadViewer');
+  const uvStage = document.getElementById('uvStage');
+  const uvImg = document.getElementById('uvImg');
+  const uvCounter = document.getElementById('uvCounter');
+  const uvPrev = document.getElementById('uvPrev');
+  const uvNext = document.getElementById('uvNext');
+  const uvClose = document.getElementById('uvClose');
+  const uvRemove = document.getElementById('uvRemove');
+  const uvDone = document.getElementById('uvDone');
   const previewImg = document.getElementById('previewImg');
   const previewOk = document.getElementById('previewOk');
   const previewCancel = document.getElementById('previewCancel');
@@ -1364,6 +1540,15 @@
       toastProcessing:'Đang xử lý ảnh {cur}/{total}…',
       toastBatchDone:'Đã thêm {n} ảnh vào thư viện ✓',
       toastTooMany:'Chỉ xử lý tối đa {max} ảnh mỗi lần',
+      uploadReviewTitle:'Ảnh tải lên',
+      uploadCountLabel:'{n} ảnh',
+      uploadHint:'Bấm vào ảnh để xem to. Bấm "Xác nhận" để lưu vào ảnh đã chụp.',
+      uploadConfirm:'Xác nhận',
+      uploadDiscard:'Huỷ',
+      uploadRemove:'Bỏ ảnh này',
+      uploadDone:'Xong',
+      uploadPrev:'Ảnh trước',
+      uploadNext:'Ảnh sau',
       captureLabel:'Chụp ảnh',
       langCode:'VI',
       themeTooltip:'Đổi giao diện sáng/tối',
@@ -1405,6 +1590,15 @@
       toastProcessing:'Processing photo {cur}/{total}…',
       toastBatchDone:'{n} photos added to the gallery ✓',
       toastTooMany:'Up to {max} photos at a time',
+      uploadReviewTitle:'Uploaded photos',
+      uploadCountLabel:'{n} photos',
+      uploadHint:'Tap a photo to view it larger. Tap "Confirm" to save them to your captured photos.',
+      uploadConfirm:'Confirm',
+      uploadDiscard:'Cancel',
+      uploadRemove:'Remove this photo',
+      uploadDone:'Done',
+      uploadPrev:'Previous photo',
+      uploadNext:'Next photo',
       captureLabel:'Capture',
       langCode:'EN',
       themeTooltip:'Toggle light / dark mode',
@@ -1476,6 +1670,7 @@
     progressLabelEl.textContent = t('phProgress');
     bigProgressCancelLabel.textContent = t('cancelLabel');
     bigProgressOkLabel.textContent = t('confirmLabel');
+    setUploadReviewTexts();
 
     if(camStatus.style.display !== 'none'){
       camStatus.textContent = t(camStatusKey);
@@ -1489,6 +1684,8 @@
   }
   langBtn.addEventListener('click', ()=>{
     applyLanguage(currentLang === 'vi' ? 'en' : 'vi');
+    if(uploadReviewModal.classList.contains('show')) renderUploadReview();
+    if(uploadViewer.classList.contains('show')) showUploadViewer(uploadViewerIdx);
     // Nếu đang mở ô nhập phóng to: đổi luôn placeholder và (với ô Công đoạn) chữ gợi ý sang ngôn ngữ mới
     if(activeField){
       if(activePhKey) bigEdit.placeholder = t(activePhKey);
@@ -2774,8 +2971,164 @@
       files = files.slice(0, MAX_GALLERY_ITEMS);
     }
     uploadBusy = true;
-    uploadQueue = { files, i:-1, committed:[] };
-    showNextUpload();
+
+    // 1 ảnh: giữ nguyên luồng xem trước như cũ
+    if(files.length === 1){
+      uploadQueue = { files, i:-1, committed:[] };
+      showNextUpload();
+      return;
+    }
+
+    // Nhiều ảnh: đóng dấu hết rồi mở màn hình duyệt (hiện số lượng, xem to, xác nhận mới lưu)
+    runBatchUpload(files);
+  });
+
+  // ================= DUYỆT NHIỀU ẢNH TẢI LÊN =================
+  // Ảnh chỉ nằm tạm trong `uploadBatch`. Chỉ khi bấm "Xác nhận" mới đưa vào thư viện "ảnh đã chụp".
+  let uploadBatch = [];      // [{ id, dataUrl }]
+  let uploadViewerIdx = 0;
+
+  function setUploadReviewTexts(){
+    uploadReviewTitle.textContent = t('uploadReviewTitle');
+    uploadReviewHint.textContent = t('uploadHint');
+    uploadDiscard.textContent = t('uploadDiscard');
+    uvRemove.textContent = t('uploadRemove');
+    uvDone.textContent = t('uploadDone');
+    uvPrev.setAttribute('aria-label', t('uploadPrev'));
+    uvNext.setAttribute('aria-label', t('uploadNext'));
+  }
+
+  async function runBatchUpload(files){
+    const stamped = [];
+    for(let i = 0; i < files.length; i++){
+      showToast(t('toastProcessing').replace('{cur}', i + 1).replace('{total}', files.length), 60000);
+      await new Promise(r => setTimeout(r, 30)); // nhường luồng cho giao diện kịp cập nhật
+      const dataUrl = await stampUploadedFile(files[i]);
+      if(dataUrl) stamped.push({ id:'u' + Date.now() + '_' + i, dataUrl });
+    }
+    toastEl.classList.remove('show');
+    clearTimeout(showToast._t);
+
+    if(!stamped.length){
+      uploadBusy = false;
+      showToast(t('toastImgError'));
+      return;
+    }
+    if(stamped.length < files.length) showToast(t('toastImgError'));
+    uploadBatch = stamped;
+    openUploadReview();
+  }
+
+  function renderUploadReview(){
+    const n = uploadBatch.length;
+    uploadReviewCount.textContent = t('uploadCountLabel').replace('{n}', n);
+    uploadConfirm.textContent = t('uploadConfirm') + ' (' + n + ')';
+    uploadConfirm.disabled = n === 0;
+    setUploadReviewTexts();
+
+    uploadReviewGrid.innerHTML = '';
+    uploadBatch.forEach((b, i) => {
+      const thumb = document.createElement('div');
+      thumb.className = 'gallery-thumb';
+
+      const img = document.createElement('img');
+      img.src = b.dataUrl;
+      img.alt = '';
+      // Bấm vào ảnh -> xem to
+      img.addEventListener('click', ()=> openUploadViewer(i));
+      thumb.appendChild(img);
+
+      const idx = document.createElement('div');
+      idx.className = 'thumbIndex';
+      idx.textContent = String(i + 1);
+      thumb.appendChild(idx);
+
+      const del = document.createElement('button');
+      del.className = 'thumbDelete';
+      del.textContent = '✕';
+      del.setAttribute('aria-label', t('uploadRemove'));
+      del.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        removeFromUploadBatch(i);
+      });
+      thumb.appendChild(del);
+
+      uploadReviewGrid.appendChild(thumb);
+    });
+  }
+
+  function openUploadReview(){
+    renderUploadReview();
+    uploadReviewModal.classList.add('show');
+  }
+  function closeUploadReview(){
+    uploadReviewModal.classList.remove('show');
+    uploadViewer.classList.remove('show');
+    uploadBatch = [];
+    uploadBusy = false;
+  }
+
+  function removeFromUploadBatch(i){
+    if(i < 0 || i >= uploadBatch.length) return;
+    uploadBatch.splice(i, 1);
+    if(!uploadBatch.length){
+      closeUploadReview();
+      return;
+    }
+    renderUploadReview();
+    if(uploadViewer.classList.contains('show')) showUploadViewer(Math.min(i, uploadBatch.length - 1));
+  }
+
+  uploadDiscard.addEventListener('click', closeUploadReview);
+  uploadConfirm.addEventListener('click', ()=>{
+    if(!uploadBatch.length) return;
+    // Lưu lần lượt theo đúng thứ tự đã chọn (số thứ tự ảnh tăng dần), rồi mở thư viện với các ảnh mới đã chọn sẵn
+    const ids = uploadBatch.map(b => addToGallery(b.dataUrl).id);
+    closeUploadReview();
+    showToast(t('toastBatchDone').replace('{n}', ids.length));
+    openGallery(ids);
+  });
+
+  // ---- Xem to từng ảnh, chuyển trái / phải ----
+  function showUploadViewer(i){
+    if(!uploadBatch.length) return;
+    uploadViewerIdx = Math.max(0, Math.min(uploadBatch.length - 1, i));
+    uvImg.src = uploadBatch[uploadViewerIdx].dataUrl;
+    uvCounter.textContent = (uploadViewerIdx + 1) + ' / ' + uploadBatch.length;
+    uvPrev.disabled = uploadViewerIdx === 0;
+    uvNext.disabled = uploadViewerIdx === uploadBatch.length - 1;
+  }
+  function openUploadViewer(i){
+    showUploadViewer(i);
+    uploadViewer.classList.add('show');
+  }
+  function closeUploadViewer(){
+    uploadViewer.classList.remove('show');
+  }
+  uvPrev.addEventListener('click', ()=> showUploadViewer(uploadViewerIdx - 1));
+  uvNext.addEventListener('click', ()=> showUploadViewer(uploadViewerIdx + 1));
+  uvClose.addEventListener('click', closeUploadViewer);
+  uvDone.addEventListener('click', closeUploadViewer);
+  uvRemove.addEventListener('click', ()=> removeFromUploadBatch(uploadViewerIdx));
+
+  // Vuốt trái / phải để chuyển ảnh (khi giao diện bị xoay giả 90° thì trục vuốt ngang = trục dọc của màn hình)
+  let uvTouch = null;
+  uvStage.addEventListener('touchstart', (e)=>{
+    const tc = e.touches[0];
+    uvTouch = { x:tc.clientX, y:tc.clientY };
+  }, { passive:true });
+  uvStage.addEventListener('touchend', (e)=>{
+    if(!uvTouch) return;
+    const tc = e.changedTouches[0];
+    const d = isForcedLandscape() ? (tc.clientY - uvTouch.y) : (tc.clientX - uvTouch.x);
+    uvTouch = null;
+    if(Math.abs(d) > 50) showUploadViewer(uploadViewerIdx + (d < 0 ? 1 : -1));
+  }, { passive:true });
+  document.addEventListener('keydown', (e)=>{
+    if(!uploadViewer.classList.contains('show')) return;
+    if(e.key === 'ArrowLeft') showUploadViewer(uploadViewerIdx - 1);
+    else if(e.key === 'ArrowRight') showUploadViewer(uploadViewerIdx + 1);
+    else if(e.key === 'Escape') closeUploadViewer();
   });
 
   // ---------- Nút xoay Dọc / Ngang ----------
