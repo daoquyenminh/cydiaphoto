@@ -729,11 +729,11 @@
   /* ---- Bản sao của khối landscape ở trên, dùng khi giao diện bị XOAY GIẢ (html.force-land) ---- */
   html.force-land #app{ flex-direction:row; }
     html.force-land{ --field-h: clamp(48px, calc(12.2 * var(--u-h)), 54px); }  /* đẩy chiều cao các ô input cao hơn để lấp khoảng trống trên/dưới */
-    html.force-land #camArea{ flex:1 1 auto; min-width:0; align-items:center; padding:14px; }
+    html.force-land #camArea{ flex:1 1 auto; min-width:0; align-items:center; padding:8px; }  /* viền mỏng để khung camera lấp gần hết vùng, to bằng khi chụp dọc */
     html.force-land #panel{
       flex:0 0 auto;
-      width:min(calc(38 * var(--u-w)), 360px);
-      min-width:260px;
+      width:clamp(300px, calc(30 * var(--u-w)), 320px);  /* panel hẹp hơn -> các thanh input ngắn lại, nhường chỗ cho khung camera */
+      min-width:300px;
       max-height:none;
       height:100%;
       border-top:none;
@@ -742,8 +742,8 @@
       box-shadow:var(--shadow-panel-land), inset 0 1px 0 rgba(255,255,255,.08);
       justify-content:center;
       align-items:stretch;
-      padding:18px calc(16px + var(--safe-r)) 18px 18px;
-      gap:14px;
+      padding:16px calc(12px + var(--safe-r)) 16px 12px;
+      gap:12px;
       overflow-y:auto;
     }
     html.force-land .row{ flex-direction:column; flex:0 0 auto; }
@@ -775,7 +775,7 @@
     html.force-land .pillLabel, html.force-land .pillBtn{ font-size:10.5px; padding:6px 9px; }
     html.force-land #topLeftControls{ top:10px; left:10px; gap:6px; }
     html.force-land #orientBtn{ top:10px; }
-    html.force-land #camWrap{ aspect-ratio:4/3; }
+    html.force-land #camWrap{ aspect-ratio:auto; width:100%; height:100%; max-width:100%; max-height:100%; }
 
 
   #toast{
@@ -1302,7 +1302,7 @@
     padding-bottom:var(--safe-r);
     padding-left:var(--safe-t);
   }
-  html.force-land #camWrap{ aspect-ratio:4/3; height:auto; max-height:100%; }
+  html.force-land #camWrap{ aspect-ratio:auto; width:100%; height:100%; max-width:100%; max-height:100%; }
 </style>
 </head>
 <body>
@@ -3082,11 +3082,10 @@
   uploadDiscard.addEventListener('click', closeUploadReview);
   uploadConfirm.addEventListener('click', ()=>{
     if(!uploadBatch.length) return;
-    // Lưu lần lượt theo đúng thứ tự đã chọn (số thứ tự ảnh tăng dần), rồi mở thư viện với các ảnh mới đã chọn sẵn
+    // Lưu lần lượt theo đúng thứ tự đã chọn (số thứ tự ảnh tăng dần), rồi quay lại giao diện camera chính
     const ids = uploadBatch.map(b => addToGallery(b.dataUrl).id);
     closeUploadReview();
     showToast(t('toastBatchDone').replace('{n}', ids.length));
-    openGallery(ids);
   });
 
   // ---- Xem to từng ảnh, chuyển trái / phải ----
