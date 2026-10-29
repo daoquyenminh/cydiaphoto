@@ -198,17 +198,26 @@
 
   /* ---------- Góc trên camera: nút đổi giao diện + ngôn ngữ, luôn nổi trên cùng ---------- */
   /* Nút xoay: nằm giữa mép trên khung camera, hiện chế độ hiện tại (Dọc / Ngang) */
-  #orientBtn{
+  #topCenterControls{
     position:absolute;
     top:14px;
     left:50%;
     transform:translateX(-50%);
     display:flex;
     align-items:center;
-    gap:6px;
+    gap:8px;
     z-index:50;
+    white-space:nowrap;
   }
-  #orientBtn:active{ transform:translateX(-50%) scale(.94); }
+  #orientBtn{ display:flex; align-items:center; }   /* chỉ hiện chữ Dọc / Ngang, không biểu tượng */
+  #orientBtn:active{ transform:scale(.94); }
+  #switchBtn{ display:flex; align-items:center; gap:6px; padding:9px 12px; font-size:11.5px; }
+  #switchBtn svg{ width:15px; height:15px; flex:0 0 auto; }
+  /* Khung camera hẹp (điện thoại dọc): không đủ chỗ cho cả 4 nút trên 1 hàng mà không đè lên logo
+     -> nhóm giữa (Dọc + Tải lại camera) xuống hàng thứ 2; tạm ẩn khi đang mở ô nhập phóng to */
+  #camWrap.narrowTop #topCenterControls{ top:66px; }
+  #camWrap.narrowTop:has(#bigEditWrap.show) #topCenterControls,
+  #camWrap.narrowTop:has(#bigProgressWrap.show) #topCenterControls{ opacity:0; pointer-events:none; }
   #topLeftControls{
     position:absolute;
     top:14px;left:14px;
@@ -480,22 +489,38 @@
   }
   .glassBtn:active{ transform:scale(.92); }
 
-  /* Nút Reload, Upload, Album to hơn và biểu tượng rõ hơn */
-  #switchBtn, #uploadBtn, #galleryBtn{
-    width:48px;
-    height:48px;
+  /* Nút tải ảnh lên + ảnh đã chụp: to hơn, biểu tượng rõ hơn, cân đối với nút chụp ở giữa */
+  #uploadBtn, #galleryBtn{
+    width:54px;
+    height:54px;
   }
-  #switchBtn{
-    font-size:25px;
+  #uploadBtn svg{ width:28px; height:28px; }
+  #galleryBtn svg{ width:27px; height:27px; }
+
+  /* Chữ nhỏ dưới nút Tải ảnh lên / Ảnh đã chụp. Đặt tuyệt đối dưới nút nên KHÔNG làm đổi bố cục
+     (2 nút vẫn thẳng hàng với nút chụp); không xuống dòng. */
+  .ctrlItem{ position:relative; display:flex; align-items:center; justify-content:center; }
+  .ctrlLabel{
+    position:absolute;
+    top:100%;
+    left:50%;
+    transform:translateX(-50%);
+    margin-top:3px;
+    font-size:10px;
+    font-weight:600;
+    line-height:1;
+    letter-spacing:.1px;
+    color:var(--text);
+    opacity:.85;
+    white-space:nowrap;
+    cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
   }
-  #uploadBtn svg{
-    width:24px;
-    height:24px;
-  }
-  #galleryBtn svg{
-    width:23px;
-    height:23px;
-  }
+  /* Màn hình quá nhỏ (hẹp / thấp): ẩn chữ cho gọn */
+  @media (max-width:359px){ .ctrlLabel{ display:none; } }
+  @media (orientation:portrait) and (max-height:560px){ .ctrlLabel{ display:none; } }
+  @media (orientation:landscape) and (max-height:430px){ .ctrlLabel{ display:none; } }
+  @media (max-width:430px){ html.force-land .ctrlLabel{ display:none; } }  /* xoay giả: chiều cao giao diện = chiều rộng thật của máy */
 
   /* ---------- PANEL (glass sheet) ---------- */
   #panel{
@@ -511,7 +536,7 @@
     display:flex;
     flex-direction:column;
     justify-content:center;
-    padding:16px 16px calc(14px + var(--safe-b));
+    padding:16px 16px calc(20px + var(--safe-b));
     gap:10px;
   }
   .row{ display:flex; gap:10px; }
@@ -698,31 +723,29 @@
     /* Khi .row xếp dọc, flex:1 của .field bị hiểu là chiều CAO (basis 0) nên ô bị co lại;
        đặt flex:none để ô giữ đúng chiều cao var(--field-h) như lúc chụp dọc */
     .field{ flex:0 0 auto; }
-    /* Bố cục ngang: hàng 1 = ô Progress full rộng; hàng 2 = 5 cột đều nhau, nút chụp ở CỘT GIỮA
-       (đúng tâm panel): [tải lại] [album] [CHỤP] [thư viện] [trống].
-       Cụm album - chụp - thư viện đối xứng quanh nút chụp. */
+    /* Bố cục ngang: hàng 1 = ô Progress full rộng; hàng 2 = 3 cột, nút chụp ở CỘT GIỮA
+       (đúng tâm panel): [album] [CHỤP] [thư viện] - đối xứng quanh nút chụp.
+       (Nút Tải lại camera đã chuyển lên mép trên khung camera, cạnh nút Dọc/Ngang.) */
     #captureRow{
       display:grid;
-      grid-template-columns:1fr 1fr auto 1fr 1fr;
+      grid-template-columns:1fr auto 1fr;
       align-items:center;
       justify-items:center;
       margin-top:2px;
-      gap:10px 6px;
+      gap:10px 14px;
     }
-    .ctrlWrap.left{ display:contents; }          /* 3 nút phụ trở thành ô trực tiếp của lưới */
+    .ctrlWrap.left{ display:contents; }          /* 2 nút phụ (album, thư viện) trở thành ô trực tiếp của lưới */
     .ctrlWrap.right{ grid-column:1 / -1; grid-row:1; justify-self:stretch; }
-    #switchBtn{ grid-column:1; grid-row:2; }
-    #uploadBtn{ grid-column:2; grid-row:2; }
-    .captureWrap{ grid-column:3; grid-row:2; justify-content:center; }
-    #galleryBtn{ grid-column:4; grid-row:2; position:relative; left:14px; } /* nhích sang phải một chút cho thoáng, cách xa nút chụp hơn */
+    #uploadItem{ grid-column:1; grid-row:2; justify-self:end; }
+    .captureWrap{ grid-column:2; grid-row:2; justify-content:center; }
+    #galleryItem{ grid-column:3; grid-row:2; justify-self:start; }
     .glassBtn{ width:42px; height:42px; font-size:17px; }
-    #switchBtn, #uploadBtn, #galleryBtn{ width:48px; height:48px; }
-    #switchBtn{ font-size:25px; }
+    #uploadBtn, #galleryBtn{ width:54px; height:54px; }
     #captureBtn{ width:64px; height:64px; }
     #progressBox{ width:100%; }
     .pillLabel, .pillBtn{ font-size:10.5px; padding:6px 9px; }
     #topLeftControls{ top:10px; left:10px; gap:6px; }
-    #orientBtn{ top:10px; }
+    #topCenterControls{ top:10px; }
     #camWrap{ aspect-ratio:4/3; }
   }
 
@@ -750,31 +773,29 @@
     /* Khi .row xếp dọc, flex:1 của .field bị hiểu là chiều CAO (basis 0) nên ô bị co lại;
        đặt flex:none để ô giữ đúng chiều cao var(--field-h) như lúc chụp dọc */
     html.force-land .field{ flex:0 0 auto; }
-    /* Bố cục ngang: hàng 1 = ô Progress full rộng; hàng 2 = 5 cột đều nhau, nút chụp ở CỘT GIỮA
-       (đúng tâm panel): [tải lại] [album] [CHỤP] [thư viện] [trống].
-       Cụm album - chụp - thư viện đối xứng quanh nút chụp. */
+    /* Bố cục ngang: hàng 1 = ô Progress full rộng; hàng 2 = 3 cột, nút chụp ở CỘT GIỮA
+       (đúng tâm panel): [album] [CHỤP] [thư viện] - đối xứng quanh nút chụp.
+       (Nút Tải lại camera đã chuyển lên mép trên khung camera, cạnh nút Dọc/Ngang.) */
     html.force-land #captureRow{
       display:grid;
-      grid-template-columns:1fr 1fr auto 1fr 1fr;
+      grid-template-columns:1fr auto 1fr;
       align-items:center;
       justify-items:center;
       margin-top:2px;
-      gap:10px 6px;
+      gap:10px 14px;
     }
-    html.force-land .ctrlWrap.left{ display:contents; }          /* 3 nút phụ trở thành ô trực tiếp của lưới */
+    html.force-land .ctrlWrap.left{ display:contents; }          /* 2 nút phụ (album, thư viện) trở thành ô trực tiếp của lưới */
     html.force-land .ctrlWrap.right{ grid-column:1 / -1; grid-row:1; justify-self:stretch; }
-    html.force-land #switchBtn{ grid-column:1; grid-row:2; }
-    html.force-land #uploadBtn{ grid-column:2; grid-row:2; }
-    html.force-land .captureWrap{ grid-column:3; grid-row:2; justify-content:center; }
-    html.force-land #galleryBtn{ grid-column:4; grid-row:2; position:relative; left:14px; } /* nhích sang phải một chút cho thoáng, cách xa nút chụp hơn */
+    html.force-land #uploadItem{ grid-column:1; grid-row:2; justify-self:end; }
+    html.force-land .captureWrap{ grid-column:2; grid-row:2; justify-content:center; }
+    html.force-land #galleryItem{ grid-column:3; grid-row:2; justify-self:start; }
     html.force-land .glassBtn{ width:42px; height:42px; font-size:17px; }
-    html.force-land #switchBtn, html.force-land #uploadBtn, html.force-land #galleryBtn{ width:48px; height:48px; }
-    html.force-land #switchBtn{ font-size:25px; }
+    html.force-land #uploadBtn, html.force-land #galleryBtn{ width:54px; height:54px; }
     html.force-land #captureBtn{ width:64px; height:64px; }
     html.force-land #progressBox{ width:100%; }
     html.force-land .pillLabel, html.force-land .pillBtn{ font-size:10.5px; padding:6px 9px; }
     html.force-land #topLeftControls{ top:10px; left:10px; gap:6px; }
-    html.force-land #orientBtn{ top:10px; }
+    html.force-land #topCenterControls{ top:10px; }
     html.force-land #camWrap{ aspect-ratio:auto; width:100%; height:100%; max-width:100%; max-height:100%; }
 
 
@@ -1312,10 +1333,15 @@
       <video id="video" playsinline autoplay muted></video>
       <canvas id="stage"></canvas>
       <div id="camStatus">Đang bật camera…</div>
-      <button id="orientBtn" class="pillBtn" type="button" title="Xoay ngang / dọc">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
-        <span id="orientLabel">Dọc</span>
-      </button>
+      <div id="topCenterControls">
+        <button id="orientBtn" class="pillBtn" type="button" title="Xoay ngang / dọc">
+          <span id="orientLabel">Dọc</span>
+        </button>
+        <button id="switchBtn" class="pillBtn" type="button" title="Tải lại camera">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v6h6"/></svg>
+          <span id="switchLabel">Tải lại camera</span>
+        </button>
+      </div>
       <div id="topLeftControls">
         <button id="themeBtn" class="glassBtn" title="Đổi giao diện sáng/tối">🌙</button>
         <button id="langBtn" class="pillBtn" title="Chuyển ngôn ngữ / Switch language">VI</button>
@@ -1360,15 +1386,20 @@
     </div>
     <div id="captureRow">
       <div class="ctrlWrap left">
-        <button id="switchBtn" class="glassBtn" title="Tải lại camera">⟲</button>
+        <div id="uploadItem" class="ctrlItem">
         <button id="uploadBtn" class="glassBtn" title="Tải ảnh từ album" aria-label="Tải ảnh từ album">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
         </button>
+          <span id="uploadLabel" class="ctrlLabel">Tải ảnh lên</span>
+        </div>
         <input id="uploadInput" type="file" accept="image/*" multiple hidden>
+        <div id="galleryItem" class="ctrlItem">
         <button id="galleryBtn" class="glassBtn" title="Xem ảnh đã chụp" aria-label="Xem ảnh đã chụp">
           <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="15" height="15" rx="2"/><rect x="6" y="2" width="15" height="15" rx="2"/></svg>
           <span id="galleryBadge" hidden>0</span>
         </button>
+          <span id="galleryLabel" class="ctrlLabel">Ảnh đã chụp</span>
+        </div>
       </div>
       <div class="captureWrap">
         <button id="captureBtn" title="Chụp"></button>
@@ -1475,7 +1506,10 @@
   ctx.imageSmoothingQuality = 'high';
   const camStatus = document.getElementById('camStatus');
   const switchBtn = document.getElementById('switchBtn');
+  const switchLabel = document.getElementById('switchLabel');
   const uploadBtn = document.getElementById('uploadBtn');
+  const uploadLabel = document.getElementById('uploadLabel');
+  const galleryLabel = document.getElementById('galleryLabel');
   const uploadInput = document.getElementById('uploadInput');
   const captureBtn = document.getElementById('captureBtn');
   const themeBtn = document.getElementById('themeBtn');
@@ -1535,6 +1569,8 @@
       phStage:'Công đoạn',
       reloadCamera:'Tải lại camera',
       uploadTooltip:'Tải ảnh từ album',
+      uploadLabel:'Tải ảnh lên',
+      galleryLabel:'Ảnh đã chụp',
       galleryTooltip:'Xem ảnh đã chụp',
       toastImgError:'Không mở được ảnh này',
       toastProcessing:'Đang xử lý ảnh {cur}/{total}…',
@@ -1585,6 +1621,8 @@
       phStage:'Stage',
       reloadCamera:'Reload camera',
       uploadTooltip:'Upload from album',
+      uploadLabel:'Upload',
+      galleryLabel:'Gallery',
       galleryTooltip:'View captured photos',
       toastImgError:'Could not open this image',
       toastProcessing:'Processing photo {cur}/{total}…',
@@ -1647,7 +1685,10 @@
     fieldStage.placeholder = t('phStage');
 
     switchBtn.title = t('reloadCamera');
+    switchLabel.textContent = t('reloadCamera');
     uploadBtn.title = t('uploadTooltip');
+    uploadLabel.textContent = t('uploadLabel');
+    galleryLabel.textContent = t('galleryLabel');
     galleryBtn.title = t('galleryTooltip');
     uploadBtn.setAttribute('aria-label', t('uploadTooltip'));
     captureBtn.title = t('captureLabel');
@@ -2195,6 +2236,8 @@
       ? { width: wrap.offsetWidth, height: wrap.offsetHeight }
       : wrap.getBoundingClientRect();
     if(rect.width < 2 || rect.height < 2) return;
+    // Khung hẹp (điện thoại dọc): nhóm nút Dọc + Tải lại camera xuống hàng thứ 2 để khỏi đè lên logo
+    wrap.classList.toggle('narrowTop', rect.width < 410);
 
     // QUAN TRỌNG: luôn đồng bộ kích thước HIỂN THỊ (CSS) theo khung camWrap mới nhất,
     // dù độ phân giải canvas có cần đổi hay không. Trước đây 2 dòng này nằm SAU điều
@@ -2344,8 +2387,8 @@
       for(const p of parts) totalWidth += context.measureText(p.text).width;
       let cx = align === 'right' ? xRef - totalWidth : xRef;
 
-      context.shadowColor = 'rgba(0,0,0,.8)';   // bóng đậm hơn để chữ nổi rõ trên nền ảnh
-      context.shadowBlur = fontSize * 0.26;
+      context.shadowColor = 'rgba(0,0,0,.55)';
+      context.shadowBlur = fontSize * 0.2;
       context.shadowOffsetX = 0;
       context.shadowOffsetY = fontSize * 0.05;
       for(const p of parts){
@@ -2367,12 +2410,12 @@
       }
     }
 
-    const itemLines = buildFieldLines('Item', item, maxWidthLeft, '#ff2d2d');
-    const teamLines = buildFieldLines('Team', team, maxWidthRight, '#ffc800');
-    const stageLines = buildFieldLines('Stage', stage, maxWidthLeft, '#ff8000');
-    const progressLines = buildFieldLines('Progress', progress, maxWidthLeft, '#3aaaff');
-    const projectLines = buildFieldLines('Project', project, maxWidthRight, '#ff8000');
-    const timeLines = buildFieldLines('Time', time, maxWidthRight, '#3aaaff');
+    const itemLines = buildFieldLines('Item', item, maxWidthLeft, '#ff4d4d');
+    const teamLines = buildFieldLines('Team', team, maxWidthRight, '#ffd84d');
+    const stageLines = buildFieldLines('Stage', stage, maxWidthLeft, '#ff9d3c');
+    const progressLines = buildFieldLines('Progress', progress, maxWidthLeft, '#6ec6ff');
+    const projectLines = buildFieldLines('Project', project, maxWidthRight, '#ff9d3c');
+    const timeLines = buildFieldLines('Time', time, maxWidthRight, '#6ec6ff');
 
     const leftLineCount = itemLines.length + stageLines.length + progressLines.length;
     const rightLineCount = teamLines.length + projectLines.length + timeLines.length;
@@ -2822,6 +2865,7 @@
     galleryModal.classList.remove('show');
   }
   galleryBtn.addEventListener('click', openGallery);
+  galleryLabel.addEventListener('click', ()=> galleryBtn.click());
   galleryCloseX.addEventListener('click', closeGallery);
   galleryModal.addEventListener('click', (e)=>{
     if(e.target === galleryModal) closeGallery();
@@ -2910,6 +2954,7 @@
 
   // ---------- Tải ảnh từ album: đóng dấu chữ + logo như ảnh chụp, rồi mở preview ----------
   uploadBtn.addEventListener('click', ()=> uploadInput.click());
+  uploadLabel.addEventListener('click', ()=> uploadBtn.click());  // bấm vào chữ cũng như bấm nút
   // Đóng dấu chữ + logo lên 1 file ảnh, trả về dataURL JPEG (hoặc null nếu không mở được ảnh)
   function stampUploadedFile(file){
     return new Promise(resolve => {
