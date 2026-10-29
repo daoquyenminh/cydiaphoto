@@ -1988,8 +1988,8 @@
         item: fieldItem.value,
         project: fieldProject.value,
         team: fieldTeam.value,
-        stage: fieldStage.value,
-        progress: fieldProgress.value
+        stage: fieldStage.value
+        // Phần trăm KHÔNG lưu: mỗi lần mở app luôn bắt đầu lại từ 0%
       }));
     }catch(e){}
   }
@@ -2002,7 +2002,7 @@
       if(typeof data.project === 'string') fieldProject.value = data.project;
       if(typeof data.team === 'string') fieldTeam.value = data.team;
       if(typeof data.stage === 'string') fieldStage.value = data.stage;
-      if(data.progress !== undefined) setProgressPct(data.progress);
+      // Không khôi phục phần trăm (cũ đã lưu cũng bỏ qua): luôn mặc định 0% mỗi lần truy cập
     }catch(e){}
   }
 
