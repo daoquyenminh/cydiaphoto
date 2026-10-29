@@ -2418,8 +2418,8 @@
       for(const p of parts) totalWidth += context.measureText(p.text).width;
       let cx = align === 'right' ? xRef - totalWidth : xRef;
 
-      context.shadowColor = 'rgba(0,0,0,.55)';
-      context.shadowBlur = fontSize * 0.2;
+      context.shadowColor = 'rgba(0,0,0,.8)';   // bóng đậm hơn để chữ nổi rõ trên nền ảnh
+      context.shadowBlur = fontSize * 0.26;
       context.shadowOffsetX = 0;
       context.shadowOffsetY = fontSize * 0.05;
       for(const p of parts){
@@ -2441,12 +2441,12 @@
       }
     }
 
-    const itemLines = buildFieldLines('Item', item, maxWidthLeft, '#ff4d4d');
-    const teamLines = buildFieldLines('Team', team, maxWidthRight, '#ffd84d');
-    const stageLines = buildFieldLines('Stage', stage, maxWidthLeft, '#ff9d3c');
-    const progressLines = buildFieldLines('Progress', progress, maxWidthLeft, '#6ec6ff');
-    const projectLines = buildFieldLines('Project', project, maxWidthRight, '#ff9d3c');
-    const timeLines = buildFieldLines('Time', time, maxWidthRight, '#6ec6ff');
+    const itemLines = buildFieldLines('Item', item, maxWidthLeft, '#ff2d2d');
+    const teamLines = buildFieldLines('Team', team, maxWidthRight, '#ffc800');
+    const stageLines = buildFieldLines('Stage', stage, maxWidthLeft, '#ff8000');
+    const progressLines = buildFieldLines('Progress', progress, maxWidthLeft, '#3aaaff');
+    const projectLines = buildFieldLines('Project', project, maxWidthRight, '#ff8000');
+    const timeLines = buildFieldLines('Time', time, maxWidthRight, '#3aaaff');
 
     const leftLineCount = itemLines.length + stageLines.length + progressLines.length;
     const rightLineCount = teamLines.length + projectLines.length + timeLines.length;
