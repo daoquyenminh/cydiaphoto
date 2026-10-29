@@ -209,9 +209,23 @@
     z-index:50;
     white-space:nowrap;
   }
+  /* Cả 4 nút ở mép trên khung camera (chế độ tối, ngôn ngữ, Dọc/Ngang, Tải lại camera) dùng CHUNG một chiều cao */
+  :root{ --top-btn-h:40px; }
+  @media (orientation: landscape){ :root{ --top-btn-h:34px; } }
+  html.force-land{ --top-btn-h:34px; }
+  #themeBtn{ width:var(--top-btn-h); height:var(--top-btn-h); }
+  #langBtn, #orientBtn, #switchBtn{
+    box-sizing:border-box;
+    height:var(--top-btn-h);
+    padding-top:0;
+    padding-bottom:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
   #orientBtn{ display:flex; align-items:center; }   /* chỉ hiện chữ Dọc / Ngang, không biểu tượng */
   #orientBtn:active{ transform:scale(.94); }
-  #switchBtn{ display:flex; align-items:center; gap:6px; padding:9px 12px; font-size:11.5px; }
+  #switchBtn{ gap:6px; padding-left:12px; padding-right:12px; font-size:11.5px; }
   #switchBtn svg{ width:15px; height:15px; flex:0 0 auto; }
   /* Khung camera hẹp (điện thoại dọc): không đủ chỗ cho cả 4 nút trên 1 hàng mà không đè lên logo
      -> nhóm giữa (Dọc + Tải lại camera) xuống hàng thứ 2; tạm ẩn khi đang mở ô nhập phóng to */
@@ -630,7 +644,7 @@
     display:flex;
     flex-direction:row;
     align-items:center;
-    gap:8px;
+    gap:18px;   /* 2 nút Tải ảnh lên / Ảnh đã chụp cách xa nhau hơn một chút (trước là 8px) */
     min-width:0;
   }
   .ctrlWrap.left{ justify-self:start; }
@@ -677,6 +691,15 @@
     border-radius:999px;
     backdrop-filter:blur(10px);
     -webkit-backdrop-filter:blur(10px);
+  }
+  /* Nút ngôn ngữ: hiện lá cờ của ngôn ngữ đang dùng (cờ vẽ bằng SVG nên hiện đúng trên mọi thiết bị,
+     kể cả Windows vốn không hiển thị emoji lá cờ) */
+  #langBtn{ display:flex; align-items:center; justify-content:center; padding-left:12px; padding-right:12px; }
+  #langBtn svg{
+    display:block;
+    width:28px; height:19px;
+    border-radius:3px;
+    box-shadow:0 0 0 1px rgba(0,0,0,.25);
   }
   .pillBtn{
     font-family:inherit;
@@ -1344,7 +1367,7 @@
       </div>
       <div id="topLeftControls">
         <button id="themeBtn" class="glassBtn" title="Đổi giao diện sáng/tối">🌙</button>
-        <button id="langBtn" class="pillBtn" title="Chuyển ngôn ngữ / Switch language">VI</button>
+        <button id="langBtn" class="pillBtn" title="Chuyển ngôn ngữ / Switch language"><svg viewBox='0 0 30 20' width='28' height='19' aria-hidden='true'><rect width='30' height='20' fill='#da251d'/><polygon fill='#ffff00' points='15.00,3.80 16.62,8.78 21.85,8.78 17.62,11.85 19.23,16.82 15.00,13.75 10.77,16.82 12.38,11.85 8.15,8.78 13.38,8.78'/></svg></button>
       </div>
       <div id="bigEditWrap">
         <div id="bigEditBox">
@@ -1669,6 +1692,8 @@
     const savedLang = localStorage.getItem('cam_lang');
     if(savedLang === 'vi' || savedLang === 'en') currentLang = savedLang;
   }catch(e){}
+  const FLAG_VN = "<svg viewBox='0 0 30 20' width='28' height='19' aria-hidden='true'><rect width='30' height='20' fill='#da251d'/><polygon fill='#ffff00' points='15.00,3.80 16.62,8.78 21.85,8.78 17.62,11.85 19.23,16.82 15.00,13.75 10.77,16.82 12.38,11.85 8.15,8.78 13.38,8.78'/></svg>";
+  const FLAG_US = "<svg viewBox='0 0 30 20' width='28' height='19' aria-hidden='true'><rect y='0.000' width='30' height='2.877' fill='#b22234'/><rect y='2.857' width='30' height='2.877' fill='#ffffff'/><rect y='5.714' width='30' height='2.877' fill='#b22234'/><rect y='8.571' width='30' height='2.877' fill='#ffffff'/><rect y='11.429' width='30' height='2.877' fill='#b22234'/><rect y='14.286' width='30' height='2.877' fill='#ffffff'/><rect y='17.143' width='30' height='2.877' fill='#b22234'/><rect width='13' height='11' fill='#3c3b6e'/><circle cx='1.60' cy='1.50' r='0.62' fill='#fff'/><circle cx='3.90' cy='1.50' r='0.62' fill='#fff'/><circle cx='6.20' cy='1.50' r='0.62' fill='#fff'/><circle cx='8.50' cy='1.50' r='0.62' fill='#fff'/><circle cx='1.60' cy='3.90' r='0.62' fill='#fff'/><circle cx='3.90' cy='3.90' r='0.62' fill='#fff'/><circle cx='6.20' cy='3.90' r='0.62' fill='#fff'/><circle cx='8.50' cy='3.90' r='0.62' fill='#fff'/><circle cx='1.60' cy='6.30' r='0.62' fill='#fff'/><circle cx='3.90' cy='6.30' r='0.62' fill='#fff'/><circle cx='6.20' cy='6.30' r='0.62' fill='#fff'/><circle cx='8.50' cy='6.30' r='0.62' fill='#fff'/><circle cx='1.60' cy='8.70' r='0.62' fill='#fff'/><circle cx='3.90' cy='8.70' r='0.62' fill='#fff'/><circle cx='6.20' cy='8.70' r='0.62' fill='#fff'/><circle cx='8.50' cy='8.70' r='0.62' fill='#fff'/></svg>";
   function t(key){ return translations[currentLang][key]; }
 
   let camStatusKey = 'camLoading'; // theo dõi thông điệp camera đang hiển thị để dịch lại khi đổi ngôn ngữ
@@ -1694,7 +1719,7 @@
     captureBtn.title = t('captureLabel');
     themeBtn.title = t('themeTooltip');
     langBtn.title = t('langTooltip');
-    langBtn.textContent = t('langCode');
+    langBtn.innerHTML = (t('langCode') === 'VI') ? FLAG_VN : FLAG_US;  // cờ Việt Nam / cờ Mỹ
 
     modalTitle.textContent = t('modalTitle');
     modalNote.textContent = t('modalNote');
