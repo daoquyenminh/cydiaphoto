@@ -1497,8 +1497,12 @@
     </div>
     <div id="uploadReviewHint" class="upload-hint"></div>
     <div id="uploadReviewGrid" class="gallery-grid"></div>
+    <div class="modal-noteWrap">
+      <div id="uploadReviewNote" class="modal-note"></div>
+    </div>
     <div class="gallery-actions">
       <button id="uploadDiscard" class="modal-btn cancel">Huỷ</button>
+      <button id="uploadShare" class="modal-btn share">Chia sẻ</button>
       <button id="uploadConfirm" class="modal-btn ok">Xác nhận</button>
     </div>
   </div>
@@ -1562,6 +1566,8 @@
   const uploadReviewGrid = document.getElementById('uploadReviewGrid');
   const uploadDiscard = document.getElementById('uploadDiscard');
   const uploadConfirm = document.getElementById('uploadConfirm');
+  const uploadShare = document.getElementById('uploadShare');
+  const uploadReviewNote = document.getElementById('uploadReviewNote');
   const uploadViewer = document.getElementById('uploadViewer');
   const uvStage = document.getElementById('uvStage');
   const uvImg = document.getElementById('uvImg');
@@ -1601,7 +1607,7 @@
       toastTooMany:'Chỉ xử lý tối đa {max} ảnh mỗi lần',
       uploadReviewTitle:'Ảnh tải lên',
       uploadCountLabel:'{n} ảnh',
-      uploadHint:'Bấm vào ảnh để xem to. Bấm "Xác nhận" để lưu vào ảnh đã chụp.',
+      uploadHint:'Bấm vào ảnh để xem to. Bấm "Xác nhận" để tải ảnh về máy và lưu vào ảnh đã chụp.',
       uploadConfirm:'Xác nhận',
       uploadDiscard:'Huỷ',
       uploadRemove:'Bỏ ảnh này',
@@ -1653,7 +1659,7 @@
       toastTooMany:'Up to {max} photos at a time',
       uploadReviewTitle:'Uploaded photos',
       uploadCountLabel:'{n} photos',
-      uploadHint:'Tap a photo to view it larger. Tap "Confirm" to save them to your captured photos.',
+      uploadHint:'Tap a photo to view it larger. Tap "Confirm" to download them and save them to your captured photos.',
       uploadConfirm:'Confirm',
       uploadDiscard:'Cancel',
       uploadRemove:'Remove this photo',
@@ -3062,6 +3068,8 @@
     uploadReviewTitle.textContent = t('uploadReviewTitle');
     uploadReviewHint.textContent = t('uploadHint');
     uploadDiscard.textContent = t('uploadDiscard');
+    uploadShare.textContent = t('modalShare');
+    uploadReviewNote.textContent = t('modalNote');
     uvRemove.textContent = t('uploadRemove');
     uvDone.textContent = t('uploadDone');
     uvPrev.setAttribute('aria-label', t('uploadPrev'));
@@ -3150,12 +3158,36 @@
   }
 
   uploadDiscard.addEventListener('click', closeUploadReview);
+  // Đưa cả loạt ảnh vào thư viện "ảnh đã chụp" theo đúng thứ tự đã chọn (số thứ tự trong tên file tăng dần)
+  function commitUploadBatch(){
+    return uploadBatch.map(b => addToGallery(b.dataUrl));
+  }
+  // Xác nhận: lưu vào thư viện VÀ tải từng ảnh về máy, rồi quay lại giao diện camera chính
   uploadConfirm.addEventListener('click', ()=>{
     if(!uploadBatch.length) return;
-    // Lưu lần lượt theo đúng thứ tự đã chọn (số thứ tự ảnh tăng dần), rồi quay lại giao diện camera chính
-    const ids = uploadBatch.map(b => addToGallery(b.dataUrl).id);
+    const items = commitUploadBatch();
+    items.forEach((item, i)=> setTimeout(()=> triggerDownload(item.dataUrl, galleryFileName(item)), i * 250));
     closeUploadReview();
-    showToast(t('toastBatchDone').replace('{n}', ids.length));
+    showToast(t('toastBatchDone').replace('{n}', items.length));
+  });
+  // Chia sẻ: cũng là xác nhận (ảnh vào thư viện), rồi mở menu chia sẻ của máy với toàn bộ ảnh
+  uploadShare.addEventListener('click', async ()=>{
+    if(!uploadBatch.length) return;
+    const items = commitUploadBatch();
+    closeUploadReview();
+    try{
+      const files = await Promise.all(items.map(async (item)=>{
+        const blob = await (await fetch(item.dataUrl)).blob();
+        return new File([blob], galleryFileName(item), { type:'image/jpeg' });
+      }));
+      if(navigator.canShare && navigator.canShare({ files })){
+        await navigator.share({ files });
+      } else {
+        showToast(t('toastShareUnsupported'));
+      }
+    }catch(e){
+      if(!e || e.name !== 'AbortError') showToast(t('toastShareUnsupported'));
+    }
   });
 
   // ---- Xem to từng ảnh, chuyển trái / phải ----
