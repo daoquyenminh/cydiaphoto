@@ -610,10 +610,26 @@
                  0 0 0 2px rgba(255,255,255,.9), 0 0 16px 3px rgba(255,255,255,.7);
     }
   }
+  /* Chế độ SÁNG: viền trắng không nhìn thấy trên nền sáng -> nhấp nháy viền ĐEN */
+  @keyframes emptyBlinkLight{
+    0%, 100%{
+      border-color:var(--glass-border);
+      box-shadow:inset 0 1px 0 var(--glass-hi), 0 4px 12px rgba(0,0,0,.18);
+    }
+    50%{
+      border-color:#000000;
+      box-shadow:inset 0 1px 0 var(--glass-hi), 0 4px 12px rgba(0,0,0,.18),
+                 0 0 0 2px rgba(0,0,0,.9), 0 0 14px 2px rgba(0,0,0,.45);
+    }
+  }
   .field:placeholder-shown,
   #progressBox.needs{ animation:emptyBlink .6s ease-in-out infinite; }  /* nhịp nhanh: 0.6 giây / nhịp */
+  :root[data-theme="light"] .field:placeholder-shown,
+  :root[data-theme="light"] #progressBox.needs{ animation-name:emptyBlinkLight; }
   @media (prefers-reduced-motion: reduce){
     .field:placeholder-shown, #progressBox.needs{ animation:none; border-color:#ffffff; }
+    :root[data-theme="light"] .field:placeholder-shown,
+    :root[data-theme="light"] #progressBox.needs{ border-color:#000000; }
   }
 
   /* ---------- Khối Progress: giờ nằm gọn trong hàng nút dưới cùng ---------- */
