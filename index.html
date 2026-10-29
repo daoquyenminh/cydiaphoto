@@ -227,11 +227,26 @@
   #orientBtn:active{ transform:scale(.94); }
   #switchBtn{ gap:6px; padding-left:12px; padding-right:12px; font-size:11.5px; }
   #switchBtn svg{ width:15px; height:15px; flex:0 0 auto; }
-  /* Khung camera hẹp (điện thoại dọc): không đủ chỗ cho cả 4 nút trên 1 hàng mà không đè lên logo
-     -> nhóm giữa (Dọc + Tải lại camera) xuống hàng thứ 2; tạm ẩn khi đang mở ô nhập phóng to */
-  #camWrap.narrowTop #topCenterControls{ top:66px; }
-  #camWrap.narrowTop:has(#bigEditWrap.show) #topCenterControls,
-  #camWrap.narrowTop:has(#bigProgressWrap.show) #topCenterControls{ opacity:0; pointer-events:none; }
+  /* Khung camera hẹp (điện thoại dọc): thu nhỏ nhẹ cả 4 nút để vẫn nằm trên CÙNG 1 HÀNG, không đè lên logo
+     (logo chiếm 25% bên phải khung). JS (layoutTopControls) bật class compactTop khi khung < 440px,
+     và thêm tinyTop (nút Tải lại camera chỉ còn biểu tượng) nếu thu nhỏ rồi vẫn chưa đủ chỗ. */
+  #camWrap.compactTop{ --top-btn-h:32px; }
+  #camWrap.compactTop #topLeftControls{ top:10px; left:10px; gap:5px; }
+  #camWrap.compactTop #topCenterControls{
+    top:10px;
+    left:var(--topCenterLeft, 100px);   /* nối tiếp ngay sau 2 nút bên trái */
+    transform:none;
+    gap:5px;
+  }
+  #camWrap.compactTop #themeBtn{ font-size:15px; }
+  #camWrap.compactTop #langBtn{ padding-left:9px; padding-right:9px; }
+  #camWrap.compactTop #langBtn svg{ width:22px; height:15px; }
+  #camWrap.compactTop #orientBtn,
+  #camWrap.compactTop #switchBtn{ font-size:10.5px; padding-left:10px; padding-right:10px; }
+  #camWrap.compactTop #switchBtn{ gap:5px; }
+  #camWrap.compactTop #switchBtn svg{ width:13px; height:13px; }
+  #camWrap.tinyTop #switchLabel{ display:none; }
+  #camWrap.tinyTop #switchBtn{ width:var(--top-btn-h); padding-left:0; padding-right:0; }
   #topLeftControls{
     position:absolute;
     top:14px;left:14px;
@@ -2259,6 +2274,25 @@
     });
   }
 
+  // Xếp 4 nút mép trên (tối/sáng, ngôn ngữ, Dọc/Ngang, Tải lại camera) cùng 1 hàng trên màn hình nhỏ
+  function layoutTopControls(){
+    const wrap = document.getElementById('camWrap');
+    const left = document.getElementById('topLeftControls');
+    const center = document.getElementById('topCenterControls');
+    if(!wrap || !left || !center) return;
+    const width = isForcedLandscape() ? wrap.offsetWidth : wrap.getBoundingClientRect().width;
+    if(width < 2) return;
+    const compact = width < 440;
+    wrap.classList.toggle('compactTop', compact);
+    wrap.classList.remove('tinyTop');
+    wrap.style.removeProperty('--topCenterLeft');
+    if(!compact) return;
+    const startX = left.offsetLeft + left.offsetWidth + 6;       // ngay sau 2 nút bên trái
+    wrap.style.setProperty('--topCenterLeft', startX + 'px');
+    const logoLeft = width * 0.75;                                 // logo vẽ ở 25% bên phải khung
+    if(startX + center.offsetWidth > logoLeft - 6) wrap.classList.add('tinyTop');
+  }
+
   function resizeCanvas(){
     const wrap = document.getElementById('camWrap');
     // Khi giao diện bị xoay giả bằng CSS transform, getBoundingClientRect trả về hộp bao ĐÃ XOAY
@@ -2267,8 +2301,7 @@
       ? { width: wrap.offsetWidth, height: wrap.offsetHeight }
       : wrap.getBoundingClientRect();
     if(rect.width < 2 || rect.height < 2) return;
-    // Khung hẹp (điện thoại dọc): nhóm nút Dọc + Tải lại camera xuống hàng thứ 2 để khỏi đè lên logo
-    wrap.classList.toggle('narrowTop', rect.width < 410);
+    layoutTopControls(); // khung hẹp -> thu nhỏ 4 nút ở mép trên để vẫn cùng 1 hàng
 
     // QUAN TRỌNG: luôn đồng bộ kích thước HIỂN THỊ (CSS) theo khung camWrap mới nhất,
     // dù độ phân giải canvas có cần đổi hay không. Trước đây 2 dòng này nằm SAU điều
@@ -3262,6 +3295,7 @@
   function updateOrientLabel(){
     const land = isNativeLandscape() || isForcedLandscape();
     orientLabel.textContent = t(land ? 'orientLandscape' : 'orientPortrait');
+    layoutTopControls();
   }
   orientBtn.addEventListener('click', async ()=>{
     // Đang ở chế độ ngang giả -> tắt, về dọc
